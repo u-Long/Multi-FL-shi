@@ -1,4 +1,4 @@
-.pth
+*.pth
 data
 __pycache__/
-.log
+*.log
