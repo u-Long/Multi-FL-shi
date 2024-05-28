@@ -29,7 +29,7 @@ if str(mod_dir) not in sys.path:
 
 from resnet import resnet18
 from options import args_parser
-from update import LocalUpdate, save_protos, LocalTest, test_inference_new_het_lt, test_proto, agg_model_m1, agg_model_m2, agg_linear_classifier_attn, agg_feature_classifier, test_global, test_unimodal
+from update import LocalUpdate, save_protos, LocalTest, test_inference_new_het_lt, test_proto, agg_model_m1, agg_model_m2, agg_linear_classifier_attn, agg_feature_classifier, test_global, test_unimodal, aggregate_global_models
 from models import CNNMnist, CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, SkeletonClassifier, InertialClassifier, FeatureClassifier, DualModalClassifier, LinearClassifierAttn, CustomDataset, TXTFeature, TXTDecoder, ImageFeature, IMGClassifier, UnitFeature,\
 cnn_layers_1, cnn_layers_2, HeadModule
 from utils import get_dataset, average_weights, exp_details, proto_aggregation, agg_func, average_weights_per, average_weights_sem, save_model_parameters_to_log, visualize_prototypes_with_tsne
@@ -124,6 +124,12 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
             local_classifier_list[idx] = local_classifier
         # update global weights
         global_protos = proto_aggregation(local_protos) # 汇总取平均
+
+
+        # 啊哈，我来加一个模型聚合(utd)
+        local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
+        
+
         # print(global_protos)
         loss_avg = sum(local_losses) / len(local_losses)
         train_loss.append(loss_avg)
@@ -523,6 +529,8 @@ if __name__ == '__main__':
     elif args.dataset == 'UMPC':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
+    # for i in range(5):
+    #     print(len(user_groups[i])) #52 !!!!!!!!!!!!!!!!!
     # ## unimodel
     # # 定义超参数
     # num_epochs = 20
@@ -700,6 +708,7 @@ if __name__ == '__main__':
     log_file = "model_parameters_init.log"
     for i, model in enumerate(local_model_list):
         save_model_parameters_to_log(model, f"Model_{i}", log_file)
+
     if args.mode == 'task_heter':
         global_protos, local_model_list, local_classifier_list = FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_dataset2, test_dataset12, test_noisy_12, user_groups, local_model_list, local_classifier_list)
         

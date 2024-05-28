@@ -7,7 +7,7 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 import copy
 import numpy as np
-from models import CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, LinearClassifierAttn, FeatureClassifier
+from models import CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, LinearClassifierAttn, FeatureClassifier, cnn_layers_1, cnn_layers_2, HeadModule
 from utils import global_test, extract_data_from_dataloader, average_state_dicts, distillation_loss, visualize_prototypes_with_tsne
 from cosmo.cmc_design import FeatureConstructor, CMCLoss
 
@@ -1942,3 +1942,130 @@ def test_inference_new_het_cifar(args, local_model_list, test_dataset, global_pr
     acc = correct/total
 
     return acc
+
+def aggregate_global_models(local_model_list, local_classifier_list, user_groups, args):
+    # 初始化全局模型并移动到指定设备上
+    imu_cnn_global = cnn_layers_1(input_size=1).to(args.device)
+    ske_cnn_global = cnn_layers_2(input_size=1).to(args.device)
+    head1_global = HeadModule(7552, 128).to(args.device)
+    head2_global = HeadModule(2688, 128).to(args.device)
+    classifier_1_global = FeatureClassifier(args).to(args.device)
+    classifier_2_global = FeatureClassifier(args).to(args.device)
+
+    # 计算选的客户端的数据样本总量
+    client_data_sizes = [len(user_groups[idx]) for idx in user_groups]
+
+    # 定义加权平均函数
+    def weighted_average_state_dicts(state_dicts, weights):
+        """
+        Compute weighted average of state dicts.
+        Args:
+        - state_dicts (list of OrderedDict): List of state dicts from different models.
+        - weights (list of float): List of weights for each state dict.
+        Returns:
+        - averaged_state_dict (OrderedDict): Averaged state dict.
+        """
+        # Initialize an empty state dict to store the averaged weights
+        averaged_state_dict = state_dicts[0].copy()
+        
+        for key in averaged_state_dict.keys():
+            averaged_state_dict[key] = sum(state_dict[key] * weight for state_dict, weight in zip(state_dicts, weights))
+
+        return averaged_state_dict
+
+    # 记录哪些客户端参与了 imu_cnn_layers 的聚合，并计算相应的权重
+    imu_cnn_indices = [i for i, model in enumerate(local_model_list) if hasattr(model.encoder, 'imu_cnn_layers')]
+    imu_cnn_list = [model.encoder.imu_cnn_layers.state_dict() for i, model in enumerate(local_model_list) \
+                    if hasattr(model.encoder, 'imu_cnn_layers')]
+
+    imu_cnn_data_sizes = [client_data_sizes[i] for i in imu_cnn_indices]
+    total_imu_cnn_data_size = sum(imu_cnn_data_sizes)
+    imu_cnn_weights = [size / total_imu_cnn_data_size for size in imu_cnn_data_sizes]
+
+    # 计算并加载加权平均的 imu_cnn_global 权重
+    if imu_cnn_list:
+        avg_imu_cnn_weights = weighted_average_state_dicts(imu_cnn_list, imu_cnn_weights)
+        imu_cnn_global.load_state_dict(avg_imu_cnn_weights)
+
+    # 对 ske_cnn_layers 重复相同的步骤
+    ske_cnn_indices = [i for i, model in enumerate(local_model_list) if hasattr(model.encoder, 'skeleton_cnn_layers')]
+    ske_cnn_list = [model.encoder.skeleton_cnn_layers.state_dict() for i, model in enumerate(local_model_list) \
+                    if hasattr(model.encoder, 'skeleton_cnn_layers')]
+
+    ske_cnn_data_sizes = [client_data_sizes[i] for i in ske_cnn_indices]
+    total_ske_cnn_data_size = sum(ske_cnn_data_sizes)
+    ske_cnn_weights = [size / total_ske_cnn_data_size for size in ske_cnn_data_sizes]
+
+    if ske_cnn_list:
+        avg_ske_cnn_weights = weighted_average_state_dicts(ske_cnn_list, ske_cnn_weights)
+        ske_cnn_global.load_state_dict(avg_ske_cnn_weights)
+
+    # 对 head1_global 重复相同的步骤
+    head1_indices = [i for i, model in enumerate(local_model_list) if hasattr(model, 'head_1')]
+    head1_list = [model.head_1.state_dict() for i, model in enumerate(local_model_list) \
+                  if hasattr(model, 'head_1')]
+
+    head1_data_sizes = [client_data_sizes[i] for i in head1_indices]
+    total_head1_data_size = sum(head1_data_sizes)
+    head1_weights = [size / total_head1_data_size for size in head1_data_sizes]
+
+    if head1_list:
+        avg_head1_weights = weighted_average_state_dicts(head1_list, head1_weights)
+        head1_global.load_state_dict(avg_head1_weights)
+
+    # 对 head2_global 重复相同的步骤
+    head2_indices = [i for i, model in enumerate(local_model_list) if hasattr(model, 'head_2')]
+    head2_list = [model.head_2.state_dict() for i, model in enumerate(local_model_list) \
+                  if hasattr(model, 'head_2')]
+
+    head2_data_sizes = [client_data_sizes[i] for i in head2_indices]
+    total_head2_data_size = sum(head2_data_sizes)
+    head2_weights = [size / total_head2_data_size for size in head2_data_sizes]
+
+    if head2_list:
+        avg_head2_weights = weighted_average_state_dicts(head2_list, head2_weights)
+        head2_global.load_state_dict(avg_head2_weights)
+
+    # 聚合 classifier_1_global 的权重
+    classifier_1_indices = [0, 1, 4]
+    classifier_list_1 = [local_classifier_list[i].state_dict() if i < 2 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
+    c1_data_sizes = [client_data_sizes[i] for i in classifier_1_indices]
+    total_c1_data_size = sum(c1_data_sizes)
+    c1_weights = [size / total_c1_data_size for size in c1_data_sizes]
+    avg_classifier_1_weights = weighted_average_state_dicts(classifier_list_1, c1_weights)
+    classifier_1_global.load_state_dict(avg_classifier_1_weights)
+
+    # 聚合 classifier_2_global 的权重
+    classifier_2_indices = [2, 3, 4]
+    classifier_list_2 = [local_classifier_list[i].state_dict() if i < 4 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
+    c2_data_sizes = [client_data_sizes[i] for i in classifier_2_indices]
+    total_c2_data_size = sum(c2_data_sizes)
+    c2_weights = [size / total_c2_data_size for size in c2_data_sizes]
+    avg_classifier_2_weights = weighted_average_state_dicts(classifier_list_2, c2_weights)
+    classifier_2_global.load_state_dict(avg_classifier_2_weights)
+
+    # 将聚合后的权重重新分配给本地模型
+    for i, local_model in enumerate(local_model_list):
+        if hasattr(local_model.encoder, 'imu_cnn_layers'):
+            local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn_global.state_dict())
+        if hasattr(local_model.encoder, 'skeleton_cnn_layers'):
+            local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn_global.state_dict())
+        if hasattr(local_model, 'head_1'):
+            local_model.head_1.load_state_dict(head1_global.state_dict())
+        if hasattr(local_model, 'head_2'):
+            local_model.head_2.load_state_dict(head2_global.state_dict())
+
+    # 将聚合后的分类器权重重新分配给本地分类器
+    for i, local_classifier in enumerate(local_classifier_list):
+        if i in classifier_1_indices:
+            if i == 4:
+                local_classifier.classifier_modality_1.load_state_dict(classifier_1_global.state_dict())
+            else:
+                local_classifier.load_state_dict(classifier_1_global.state_dict())
+        if i in classifier_2_indices:
+            if i == 4:
+                local_classifier.classifier_modality_2.load_state_dict(classifier_2_global.state_dict())
+            else:
+                local_classifier.load_state_dict(classifier_2_global.state_dict())
+
+    return local_model_list, local_classifier_list
