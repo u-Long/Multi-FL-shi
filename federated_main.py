@@ -20,10 +20,10 @@ import random
 import torch.utils.model_zoo as model_zoo
 from pathlib import Path
 import torch.backends.cudnn as cudnn
-lib_dir = (Path(__file__).parent / ".." / "lib").resolve()
+lib_dir = (Path(__file__).parent / "lib").resolve()
 if str(lib_dir) not in sys.path:
     sys.path.insert(0, str(lib_dir))
-mod_dir = (Path(__file__).parent / ".." / "lib" / "models").resolve()
+mod_dir = (Path(__file__).parent / "lib" / "models").resolve()
 if str(mod_dir) not in sys.path:
     sys.path.insert(0, str(mod_dir))
 
@@ -141,9 +141,9 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
     # print('For all users (with protos), mean of test acc is {:.5f}, std of test acc is {:.5f}'.format(np.mean(acc_list_g),np.std(acc_list_g)))
     # print('For all users (with protos), mean of proto loss is {:.5f}, std of loss acc is {:.5f}'.format(np.mean(loss_list), np.std(loss_list)))
     # 假设您的模型列表是local_model_list，您可以像这样保存它们的参数
-    # log_file = "model_parameters_1_1.log"
-    # for i, model in enumerate(local_model_list):
-    #     save_model_parameters_to_log(model, f"Model_{i}", log_file)
+    log_file = "model_parameters_1_1.log"
+    for i, model in enumerate(local_model_list):
+        save_model_parameters_to_log(model, f"Model_{i}", log_file)
     # test_unimodal(args, local_model_list, test_noisy_1, local_classifier_list)
     return global_protos, local_model_list, local_classifier_list
     # save protos
@@ -218,9 +218,9 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
     # print("Test with proto on modality12, acc is {:.5f}, loss is {:.5f}".format(np.array(acc_list_g12), np.array(loss_list12).mean()))
 
     # 假设您的模型列表是local_model_list，您可以像这样保存它们的参数
-    # log_file = "model_parameters_2_1.log"
-    # for i, model in enumerate(local_model_list):
-    #     save_model_parameters_to_log(model, f"Model_{i}", log_file)
+    log_file = "model_parameters_2_1.log"
+    for i, model in enumerate(local_model_list):
+        save_model_parameters_to_log(model, f"Model_{i}", log_file)
 
     # save protos
     # if args.dataset == 'mnist':
@@ -522,69 +522,69 @@ if __name__ == '__main__':
     elif args.dataset == 'UMPC':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
-    ## unimodel
-    # 定义超参数
-    num_epochs = 20
-    learning_rate = 0.001
+    # ## unimodel
+    # # 定义超参数
+    # num_epochs = 20
+    # learning_rate = 0.001
 
-    # 实例化模型
-    input_size = 1  # 根据您的数据调整
-    num_classes = 6  # 根据您的数据调整
-    encoder_model = MyUTDModelFeature1(input_size=1).to(args.device)
-    decoder_model = FeatureClassifier(args).to(args.device)
+    # # 实例化模型
+    # input_size = 1  # 根据您的数据调整
+    # num_classes = 6  # 根据您的数据调整
+    # encoder_model = MyUTDModelFeature1(input_size=1).to(args.device)
+    # decoder_model = FeatureClassifier(args).to(args.device)
 
-    # 定义损失函数和优化器
-    criterion = nn.CrossEntropyLoss()
-    encoder_optimizer = optim.Adam(encoder_model.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.Adam(decoder_model.parameters(), lr=learning_rate)
+    # # 定义损失函数和优化器
+    # criterion = nn.CrossEntropyLoss()
+    # encoder_optimizer = optim.Adam(encoder_model.parameters(), lr=learning_rate)
+    # decoder_optimizer = optim.Adam(decoder_model.parameters(), lr=learning_rate)
 
-    # 训练模型
-    def train_model(encoder, decoder, train_loader, criterion, encoder_optimizer, decoder_optimizer, num_epochs):
-        encoder.train()
-        decoder.train()
-        for epoch in range(num_epochs):
-            total_loss = 0
-            for i, (inputs, labels) in enumerate(train_loader):
-                inputs, labels = inputs.to(args.device), labels.to(args.device)
+    # # 训练模型
+    # def train_model(encoder, decoder, train_loader, criterion, encoder_optimizer, decoder_optimizer, num_epochs):
+    #     encoder.train()
+    #     decoder.train()
+    #     for epoch in range(num_epochs):
+    #         total_loss = 0
+    #         for i, (inputs, labels) in enumerate(train_loader):
+    #             inputs, labels = inputs.to(args.device), labels.to(args.device)
 
-                # 前向传播
-                features = encoder(inputs)
-                outputs = decoder(features)
-                loss = criterion(outputs, labels)
+    #             # 前向传播
+    #             features = encoder(inputs)
+    #             outputs = decoder(features)
+    #             loss = criterion(outputs, labels)
 
-                # 反向传播和优化
-                encoder_optimizer.zero_grad()
-                decoder_optimizer.zero_grad()
-                loss.backward()
-                encoder_optimizer.step()
-                decoder_optimizer.step()
+    #             # 反向传播和优化
+    #             encoder_optimizer.zero_grad()
+    #             decoder_optimizer.zero_grad()
+    #             loss.backward()
+    #             encoder_optimizer.step()
+    #             decoder_optimizer.step()
 
-                total_loss += loss.item()
+    #             total_loss += loss.item()
 
-            avg_loss = total_loss / len(train_loader)
-            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}')
+    #         avg_loss = total_loss / len(train_loader)
+    #         print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}')
 
-    # 预测
-    def test_model(encoder, decoder, test_loader):
-        encoder.eval()
-        decoder.eval()
-        all_preds = []
-        all_labels = []
-        with torch.no_grad():
-            for inputs, labels in test_loader:
-                inputs, labels = inputs.to(args.device), labels.to(args.device)
-                features = encoder(inputs)
-                outputs = decoder(features)
-                _, preds = torch.max(outputs, 1)
-                all_preds.extend(preds.cpu().numpy())
-                all_labels.extend(labels.cpu().numpy())
+    # # 预测
+    # def test_model(encoder, decoder, test_loader):
+    #     encoder.eval()
+    #     decoder.eval()
+    #     all_preds = []
+    #     all_labels = []
+    #     with torch.no_grad():
+    #         for inputs, labels in test_loader:
+    #             inputs, labels = inputs.to(args.device), labels.to(args.device)
+    #             features = encoder(inputs)
+    #             outputs = decoder(features)
+    #             _, preds = torch.max(outputs, 1)
+    #             all_preds.extend(preds.cpu().numpy())
+    #             all_labels.extend(labels.cpu().numpy())
 
-        accuracy = accuracy_score(all_labels, all_preds)
-        print(f'Test Accuracy: {accuracy:.4f}')
+    #     accuracy = accuracy_score(all_labels, all_preds)
+    #     print(f'Test Accuracy: {accuracy:.4f}')
 
-    # 运行训练和测试
-    train_model(encoder_model, decoder_model, train_dataloader_single_modality_1, criterion, encoder_optimizer, decoder_optimizer, num_epochs)
-    test_model(encoder_model, decoder_model, test_noisy_1)
+    # # 运行训练和测试
+    # train_model(encoder_model, decoder_model, train_dataloader_single_modality_1, criterion, encoder_optimizer, decoder_optimizer, num_epochs)
+    # test_model(encoder_model, decoder_model, test_noisy_1)
 
 
 

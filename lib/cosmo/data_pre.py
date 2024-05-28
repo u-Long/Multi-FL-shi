@@ -218,7 +218,7 @@ def load_class_data_single(sensor_str, activity_class, train_test_flag, label_ra
 				if temp_file == 'a8_s1_t4' or temp_file == 'a23_s6_t4' or temp_file == 'a27_s8_t4':
 					print("No such file:", temp_file)
 				else:
-					data_sample = np.load('../data/UTD-data/split-6-2/train/label-27-5-percent/unlabel/' + sensor_str + '/' + temp_file + '_' + sensor_str + '.npy')
+					data_sample = np.load('./data/UTD-data/split-6-2/train/label-27-5-percent/unlabel/' + sensor_str + '/' + temp_file + '_' + sensor_str + '.npy')
 					data_all_subject.extend(data_sample)
 
 	elif train_test_flag == 3:#train unlabel
@@ -233,7 +233,7 @@ def load_class_data_single(sensor_str, activity_class, train_test_flag, label_ra
 				if temp_file == 'a8_s1_t4' or temp_file == 'a23_s6_t4' or temp_file == 'a27_s8_t4':
 					print("No such file:", temp_file)
 				elif (temp_file in label_file_name) == False:
-					data_sample = np.load('../data/UTD-data/split-6-2/train/' + train_folder + '/unlabel/' + sensor_str + '/' + temp_file + '_' + sensor_str + '.npy')
+					data_sample = np.load('./data/UTD-data/split-6-2/train/' + train_folder + '/unlabel/' + sensor_str + '/' + temp_file + '_' + sensor_str + '.npy')
 					data_all_subject.extend(data_sample)
 					# print(temp_file)
 

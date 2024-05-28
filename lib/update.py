@@ -466,7 +466,7 @@ class LocalUpdate(object):
                         i += 1
                     loss2 = loss_mse(proto_new, protos)
 
-                loss = loss1 + loss2 * args.ld
+                loss = loss1 #+ loss2 * args.ld
 
                 loss.backward()
                 optimizer.step()
@@ -547,7 +547,7 @@ class LocalUpdate(object):
                         i += 1
                     loss2 = loss_mse(proto_new, protos)
 
-                loss = loss1 + loss2 * args.ld
+                loss = loss1 #+ loss2 * args.ld
                 loss.backward()
                 optimizer.step()
                 if args.dataset == 'UMPC':
@@ -630,7 +630,7 @@ class LocalUpdate(object):
                         i += 1
                     loss2 = 1/2*loss_mse(proto_new1, protos1)+1/2*loss_mse(proto_new2, protos2)
 
-                loss = loss1 + loss2 * args.ld
+                loss = loss1 #+ loss2 * args.ld
                 
                 loss.backward()
                 optimizer.step()
@@ -1733,7 +1733,7 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
 
         acc = correct / total
         acc_list.append(acc)
-        # print(f'| Test Accuracy with single modality: {acc:.5f}')
+        print(f'| Test Accuracy with single modality: {acc:.5f}')
         return acc_list
 
     def evaluate_multimodality(model, dataloader, global_protos):
@@ -1780,8 +1780,8 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
         print(f'| Test Accuracy with multimodality: {acc:.5f}')
         return acc_list, loss_list
 
-    acc_list_g1 = evaluate_single_modality(model1, test_dataloader1, global_protos, 1)
-    acc_list_g2 = evaluate_single_modality(model2, test_dataloader2, global_protos, 2)
+    acc_list_g1 = evaluate_single_modality(local_model_list[0], test_dataloader1, global_protos, 1)
+    acc_list_g2 = evaluate_single_modality(local_model_list[2], test_dataloader2, global_protos, 2)
     acc_list_g12, loss_list12 = evaluate_multimodality(model12, test_dataloader12, global_protos)
 
     return acc_list_g1, acc_list_g2, acc_list_g12, loss_list12
