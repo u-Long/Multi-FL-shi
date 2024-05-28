@@ -1699,14 +1699,16 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
     def evaluate_single_modality(model, dataloader, global_protos, mdl):
         model.eval()
         correct, total, acc_list, loss_list = 0.0, 0.0, [], []
-
+        visualize_done = False  # 设置一个标志
         for (m, labels) in dataloader:
             if m.size(0) < 2:
                 continue
             m, labels = m.to(device), labels.to(device)
             model.zero_grad()
             protos = model(m)
-            
+            if not visualize_done:  # 如果函数还没有执行过
+                visualize_prototypes_with_tsne(global_protos, protos, labels, save_img=True, img_path="./img_sne/")
+                visualize_done = True  # 改变标志的值
             a_large_num = 100
             dist = a_large_num * torch.ones(size=(m.shape[0], args.num_classes)).to(device)
             for i in range(m.shape[0]):
@@ -1739,15 +1741,17 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
     def evaluate_multimodality(model, dataloader, global_protos):
         model.eval()
         correct, total, acc_list, loss_list = 0.0, 0.0, [], []
-
+        visualize_done = False  # 设置一个标志
         for (m1, m2, labels) in dataloader:
             if m1.size(0) < 2:
                 continue
             m1, m2, labels = m1.to(device), m2.to(device), labels.to(device)
             model.zero_grad()
             protos1, protos2 = model(m1, m2)
-            # visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
-            # visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
+            if not visualize_done:  # 如果函数还没有执行过
+                visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
+                visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
+                visualize_done = True  # 改变标志的值
             a_large_num = 100
             dist = a_large_num * torch.ones(size=(m1.shape[0], args.num_classes)).to(device)
             for i in range(m1.shape[0]):
@@ -1781,7 +1785,7 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
         return acc_list, loss_list
 
     acc_list_g1 = evaluate_single_modality(local_model_list[0], test_dataloader1, global_protos, 1)
-    acc_list_g2 = evaluate_single_modality(local_model_list[2], test_dataloader2, global_protos, 2)
+    acc_list_g2 = evaluate_single_modality(model2, test_dataloader2, global_protos, 2)
     acc_list_g12, loss_list12 = evaluate_multimodality(model12, test_dataloader12, global_protos)
 
     return acc_list_g1, acc_list_g2, acc_list_g12, loss_list12

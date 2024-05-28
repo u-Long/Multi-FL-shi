@@ -30,7 +30,8 @@ if str(mod_dir) not in sys.path:
 from resnet import resnet18
 from options import args_parser
 from update import LocalUpdate, save_protos, LocalTest, test_inference_new_het_lt, test_proto, agg_model_m1, agg_model_m2, agg_linear_classifier_attn, agg_feature_classifier, test_global, test_unimodal
-from models import CNNMnist, CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, SkeletonClassifier, InertialClassifier, FeatureClassifier, DualModalClassifier, LinearClassifierAttn, CustomDataset, TXTFeature, TXTDecoder, ImageFeature, IMGClassifier, UnitFeature
+from models import CNNMnist, CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, SkeletonClassifier, InertialClassifier, FeatureClassifier, DualModalClassifier, LinearClassifierAttn, CustomDataset, TXTFeature, TXTDecoder, ImageFeature, IMGClassifier, UnitFeature,\
+cnn_layers_1, cnn_layers_2, HeadModule
 from utils import get_dataset, average_weights, exp_details, proto_aggregation, agg_func, average_weights_per, average_weights_sem, save_model_parameters_to_log, visualize_prototypes_with_tsne
 
 model_urls = {
@@ -596,6 +597,13 @@ if __name__ == '__main__':
     local_model_list = []
     local_classifier_list = []
     local_classifier_list_3 = []
+    # 声明组件模型参数
+    imu_cnn = cnn_layers_1(input_size=1)
+    ske_cnn = cnn_layers_2(input_size=1)
+    head1 = HeadModule(7552, 128)
+    head2 = HeadModule(2688, 128)
+    classifier_uni = FeatureClassifier(args)
+
     for i in range(args.num_users):
         if args.dataset == 'mnist':
             if args.mode == 'model_heter':
@@ -643,13 +651,25 @@ if __name__ == '__main__':
         elif args.dataset == 'UTD':
             if i<2:
                 local_model = MyUTDModelFeature1(input_size=1)
+                local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
+                local_model.head_1.load_state_dict(head1.state_dict())
                 local_classifier = FeatureClassifier(args)
+                local_classifier.load_state_dict(classifier_uni.state_dict())
             elif i>=2 and i<4:
                 local_model = MyUTDModelFeature2(input_size=1)
+                local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
+                local_model.head_2.load_state_dict(head2.state_dict())
                 local_classifier = FeatureClassifier(args)
+                local_classifier.load_state_dict(classifier_uni.state_dict())
             else:
                 local_model = MyUTDModelFeature(input_size=1)
+                local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
+                local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
+                local_model.head_1.load_state_dict(head1.state_dict())
+                local_model.head_2.load_state_dict(head2.state_dict())
                 local_classifier = DualModalClassifier(args)
+                local_classifier.classifier_modality_1.load_state_dict(classifier_uni.state_dict())
+                local_classifier.classifier_modality_2.load_state_dict(classifier_uni.state_dict())
         elif args.dataset == 'UMPC':
             if i<8:
                 local_model = ImageFeature()
@@ -676,6 +696,10 @@ if __name__ == '__main__':
         classifier.to(args.device)
         classifier.train()
         local_classifier_list_3.append(classifier)
+
+    log_file = "model_parameters_init.log"
+    for i, model in enumerate(local_model_list):
+        save_model_parameters_to_log(model, f"Model_{i}", log_file)
     if args.mode == 'task_heter':
         global_protos, local_model_list, local_classifier_list = FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_dataset2, test_dataset12, test_noisy_12, user_groups, local_model_list, local_classifier_list)
         
@@ -713,8 +737,8 @@ if __name__ == '__main__':
         #         print(f"New best model saved with accuracy: {best_acc:.3f}")
         
            
-    else:
-        FedProto_modelheter(args, train_dataset, test_dataset, user_groups, user_groups_lt, local_model_list, classes_list)
+    # else:
+    #     FedProto_modelheter(args, train_dataset, test_dataset, user_groups, user_groups_lt, local_model_list, classes_list)
 
     global_protos, local_model_list, global_features = FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_12, user_groups, local_model_list, local_classifier_list, global_protos)
     FedProto_taskheter3(args, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_12, user_groups, local_model_list, local_classifier_list_3, global_features)

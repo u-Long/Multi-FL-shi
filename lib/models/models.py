@@ -134,6 +134,26 @@ class Lenet(nn.Module):
         return F.log_softmax(x, dim=1), x1
     
 
+def init_weights(m):
+    if isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
+        nn.init.kaiming_uniform_(m.weight, nonlinearity='relu')
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.Linear):
+        nn.init.xavier_uniform_(m.weight)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm3d) or isinstance(m, nn.BatchNorm1d):
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
+    else:
+        # Default initialization for other layers
+        for param in m.parameters():
+            if param.dim() > 1:
+                nn.init.kaiming_uniform_(param, nonlinearity='relu')
+            else:
+                nn.init.constant_(param, 0)
+
 class cnn_layers_1(nn.Module):
     """
     CNN layers applied on acc sensor data to generate pre-softmax
@@ -170,6 +190,7 @@ class cnn_layers_1(nn.Module):
             nn.ReLU(inplace=True),
 
             )
+        # self.apply(init_weights)
 
     def forward(self, x):
         x = self.features(x)
@@ -213,6 +234,7 @@ class cnn_layers_2(nn.Module):
             nn.ReLU(inplace=True),
 
             )
+        # self.apply(init_weights)
 
 
     def forward(self, x):
@@ -261,7 +283,21 @@ class Encoder(nn.Module):
 
         return imu_output, skeleton_output
 
+class HeadModule(nn.Module):
+    def __init__(self, input_size, output_size):
+        super().__init__()
+        self.seq = nn.Sequential(
+            nn.Linear(input_size, 1280),
+            nn.BatchNorm1d(1280),
+            nn.ReLU(inplace=True),
+            nn.Linear(1280, output_size),
+        )
+        # self.apply(init_weights)
 
+    def forward(self, x):
+        return F.normalize(self.seq(x.view(x.size(0), -1)), dim=1)
+    
+    
 class MyUTDModelFeature1(nn.Module):
     """Model for human-activity-recognition."""
     def __init__(self, input_size):
@@ -269,14 +305,8 @@ class MyUTDModelFeature1(nn.Module):
 
         self.encoder = Encoder1(input_size)
 
-        self.head_1 = nn.Sequential(
-
-            nn.Linear(7552, 1280),
-            nn.BatchNorm1d(1280),
-            nn.ReLU(inplace=True),
-
-            nn.Linear(1280, 128),            
-            )
+        self.head_1 = HeadModule(7552, 128)
+        # self.apply(init_weights)
 
     def forward(self, x1):
 
@@ -294,14 +324,8 @@ class MyUTDModelFeature2(nn.Module):
 
         self.encoder = Encoder2(input_size)
 
-        self.head_2 = nn.Sequential(
-
-            nn.Linear(2688, 1280),
-            nn.BatchNorm1d(1280),
-            nn.ReLU(inplace=True),
-
-            nn.Linear(1280, 128),            
-            )
+        self.head_2 = HeadModule(2688, 128)
+        # self.apply(init_weights)
 
     def forward(self, x2):
 
@@ -319,23 +343,10 @@ class MyUTDModelFeature(nn.Module):
 
         self.encoder = Encoder(input_size)
 
-        self.head_1 = nn.Sequential(
+        self.head_1 = HeadModule(7552, 128)
 
-            nn.Linear(7552, 1280),
-            nn.BatchNorm1d(1280),
-            nn.ReLU(inplace=True),
-
-            nn.Linear(1280, 128),            
-            )
-
-        self.head_2 = nn.Sequential(
-
-            nn.Linear(2688, 1280),
-            nn.BatchNorm1d(1280),
-            nn.ReLU(inplace=True),
-
-            nn.Linear(1280, 128),            
-            )
+        self.head_2 = HeadModule(2688, 128)
+        # self.apply(init_weights)
 
     def forward(self, x1, x2):
 
@@ -377,6 +388,7 @@ class FeatureClassifier(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(128, args.num_classes),
         )
+        # self.apply(init_weights)
 
     def forward(self, x):
         # x的形状是 [batch_size, 128]
@@ -478,6 +490,7 @@ class Attn(nn.Module):
             nn.Tanh(),
 
             )
+        # self.apply(init_weights)
 
     def forward(self, hidden_state_1, hidden_state_2):
 
@@ -522,6 +535,7 @@ class LinearClassifierAttn(nn.Module):
 
             nn.Linear(128, num_classes),
             )
+        # self.apply(init_weights)
 
     def forward(self, feature1, feature2):
 
