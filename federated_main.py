@@ -127,7 +127,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
 
 
         # 啊哈，我来加一个模型聚合(utd)
-        local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
+        # local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
         
 
         # print(global_protos)
@@ -141,7 +141,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
     #         print(f"  Modality {i}: {proto}")
     # visualize_prototypes_with_tsne(global_protos, save_img=True, img_path='./tsne_visualization.png')
     
-    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, test_noisy_12, global_protos)
+    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, testdataset12, global_protos)
     # print("Test with proto on modality1, acc is {:.5f}".format(np.array(acc_list_g1)))
     # print("Test with proto on modality2, acc is {:.5f}".format(np.array(acc_list_g2)))
     # print("Test with proto on modality12, acc is {:.5f}, loss is {:.5f}".format(np.array(acc_list_g12), np.array(loss_list12).mean()))
@@ -205,7 +205,8 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
             local_model.load_state_dict(local_weights_list[idx], strict=True)
             local_model_list[idx] = local_model
 
-
+        # 啊哈，我来加一个模型聚合(utd)
+        # local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
         # update global weights
         global_protos = proto_aggregation(local_protos) # 汇总取平均
         global_features = proto_aggregation(local_features) 
@@ -219,7 +220,7 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
     #     for i, proto in enumerate(protos, start=1):
     #         print(f"  Modality {i}: {proto}")
     # visualize_prototypes_with_tsne(global_protos, save_img=True, img_path='./tsne_visualization_2.png')
-    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, test_noisy_12, global_protos)
+    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, test_dataset12, global_protos)
     # print("Test with proto on modality1, acc is {:.5f}".format(np.array(acc_list_g1)))
     # print("Test with proto on modality2, acc is {:.5f}".format(np.array(acc_list_g2)))
     # print("Test with proto on modality12, acc is {:.5f}, loss is {:.5f}".format(np.array(acc_list_g12), np.array(loss_list12).mean()))

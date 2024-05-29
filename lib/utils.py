@@ -116,7 +116,7 @@ def utd_iid(args, dataset, num_users, first_modality_users, second_modality_user
     :param single_modality_users: List of users that should receive only one modality.
     :return: Dictionary of user data indices.
     """
-    num_items = int(len(dataset)*0.8) # int(len(dataset) / num_users)
+    num_items =  int(len(dataset) / num_users) # int(len(dataset)*0.8)
     user_groups = {}
     user_dataloaders = {}
     for i in range(num_users):

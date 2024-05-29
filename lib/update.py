@@ -1707,7 +1707,7 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
             model.zero_grad()
             protos = model(m)
             if not visualize_done:  # 如果函数还没有执行过
-                visualize_prototypes_with_tsne(global_protos, protos, labels, save_img=True, img_path="./img_sne/")
+                # visualize_prototypes_with_tsne(global_protos, protos, labels, save_img=True, img_path="./img_sne/")
                 visualize_done = True  # 改变标志的值
             a_large_num = 100
             dist = a_large_num * torch.ones(size=(m.shape[0], args.num_classes)).to(device)
@@ -1749,8 +1749,8 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
             model.zero_grad()
             protos1, protos2 = model(m1, m2)
             if not visualize_done:  # 如果函数还没有执行过
-                visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
-                visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
+                # visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
+                # visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
                 visualize_done = True  # 改变标志的值
             a_large_num = 100
             dist = a_large_num * torch.ones(size=(m1.shape[0], args.num_classes)).to(device)
@@ -1783,11 +1783,21 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
         acc_list.append(acc)
         print(f'| Test Accuracy with multimodality: {acc:.5f}')
         return acc_list, loss_list
-
+    # 不聚合模型的话，就是这样单客户端测试
+    print("client:0")
     acc_list_g1 = evaluate_single_modality(local_model_list[0], test_dataloader1, global_protos, 1)
-    acc_list_g2 = evaluate_single_modality(model2, test_dataloader2, global_protos, 2)
-    acc_list_g12, loss_list12 = evaluate_multimodality(model12, test_dataloader12, global_protos)
-
+    print("client:1")
+    acc_list_g1 = evaluate_single_modality(local_model_list[1], test_dataloader1, global_protos, 1)
+    print("client:2")
+    acc_list_g2 = evaluate_single_modality(local_model_list[2], test_dataloader2, global_protos, 2)
+    print("client:3")
+    acc_list_g2 = evaluate_single_modality(local_model_list[3], test_dataloader2, global_protos, 2)
+    print("client:4")
+    acc_list_g12, loss_list12 = evaluate_multimodality(local_model_list[4], test_dataloader12, global_protos)
+    # 聚合模型后可以一类测试
+    # acc_list_g1 = evaluate_single_modality(model1, test_dataloader1, global_protos, 1)
+    # acc_list_g2 = evaluate_single_modality(model2, test_dataloader2, global_protos, 2)
+    # acc_list_g12, loss_list12 = evaluate_multimodality(model12, test_dataloader12, global_protos)
     return acc_list_g1, acc_list_g2, acc_list_g12, loss_list12
 
 def test_unimodal(args, local_model_list, test_dataset1, local_classifier_list):
