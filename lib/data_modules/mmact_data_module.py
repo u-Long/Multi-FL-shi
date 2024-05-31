@@ -10,8 +10,8 @@ from transforms.general_transforms import ToTensor, ToFloat
 
 MMACT_DEFAULT_SPLIT = {
     "train": {"subject": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
-    "val": {"subject": [13, 14, 15]},
-    "test": {"subject": [17, 18, 19, 20]}
+    # "val": {"subject": [13, 14, 15]},
+    "test": {"subject": [13, 14, 15, 17, 18, 19, 20]}
 }
 
 class MMActDataset(MMHarDataset):

@@ -610,20 +610,43 @@ def get_dataset(args, n_list, k_list):
             "inertial": transforms.Compose([ToTensor(), ToFloat(), Jittering(0.05), InertialSampler(150)]),
             "skeleton": SkeletonSampler(150)
         }
-        data_module = MMActDataModule(batch_size=8, train_transforms=train_transforms)
+        test_transforms = {
+            "inertial": transforms.Compose([ToTensor(), ToFloat(), InertialSampler(150)]),
+            "skeleton": SkeletonSampler(150)
+        }
+        data_module = MMActDataModule(batch_size=8, train_transforms=train_transforms, test_transforms=test_transforms)
         data_module.setup()
         train_dataloader = data_module.train_dataloader()
-        val_dataloader = data_module.val_dataloader()
+        # val_dataloader = data_module.val_dataloader()
         test_dataloader = data_module.test_dataloader()
+
+        # # 打印每个批次的形状信息
+        # def check_shapes(dataloader, name):
+        #     for batch in dataloader:
+        #         print(f"{name} batch keys: {batch.keys()}")
+        #         print(f"{name} batch label shape: {batch['label'].shape}")
+        #         if 'inertial' in batch:
+        #             print(f"{name} batch inertial shape: {batch['inertial'].shape}")
+        #         if 'skeleton' in batch:
+        #             print(f"{name} batch skeleton shape: {batch['skeleton'].shape}")
+        #         break  # 只检查第一个批次
+
+        # check_shapes(train_dataloader, "Train")
+        # if val_dataloader:
+        #     check_shapes(val_dataloader, "Validation")
+        # check_shapes(test_dataloader, "Test")
+        # Train batch label shape: torch.Size([8])
+        # Train batch inertial shape: torch.Size([8, 150, 12])
+        # Train batch skeleton shape: torch.Size([8, 17, 2, 150])
 
         # 计算训练集、验证集、测试集样本数量
         train_size = sum(len(batch['label']) for batch in train_dataloader)
         # val_size = sum(len(batch['label']) for batch in val_dataloader)
-        # test_size = sum(len(batch['label']) for batch in test_dataloader)
+        test_size = sum(len(batch['label']) for batch in test_dataloader)
 
         print(f"训练集样本数量: {train_size}")
         # print(f"验证集样本数量: {val_size}")
-        # print(f"测试集样本数量: {test_size}")
+        print(f"测试集样本数量: {test_size}")
         def create_user_dataloaders_with_dirichlet(data_module, num_clients=20, alpha=0.5):
             data_module.setup()
             
@@ -652,6 +675,14 @@ def get_dataset(args, n_list, k_list):
 
             for client_id, indices in client_indices.items():
                 subset = Subset(dataset, indices)
+                if client_id < 8:
+                    # Clients 1-8: only inertial data
+                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['inertial'].iloc[i].loc["modality"] == "inertial"])
+                elif client_id < 16:
+                    # Clients 9-16: only skeleton data
+                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['skeleton'].iloc[i].loc["modality"] == "skeleton"])
+                # Clients 17-20: both inertial and skeleton data (no need to filter)
+                
                 user_dataloaders[client_id] = DataLoader(subset, batch_size=data_module.batch_size, shuffle=True, num_workers=data_module.num_workers)
 
             return user_dataloaders
@@ -672,6 +703,14 @@ def get_dataset(args, n_list, k_list):
                 indices = all_indices[start_idx:end_idx]
 
                 subset = Subset(dataset, indices)
+                if client_id < 8:
+                    # Clients 1-8: only inertial data
+                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['inertial'].iloc[i].loc["modality"] == "inertial"])
+                elif client_id < 16:
+                    # Clients 9-16: only skeleton data
+                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['skeleton'].iloc[i].loc["modality"] == "skeleton"])
+                # Clients 17-20: both inertial and skeleton data (no need to filter)
+                
                 user_dataloaders[client_id] = DataLoader(subset, batch_size=data_module.batch_size, shuffle=True, num_workers=data_module.num_workers)
 
             return user_dataloaders
@@ -691,7 +730,7 @@ def get_dataset(args, n_list, k_list):
             user_dataloaders = iid_user_dataloaders
         else:
             user_dataloaders = noniid_user_dataloaders
-
+    return train_dataloader, test_dataloader, user_dataloaders
     return train_dataloader_single_modality_1, train_dataloader, test_dataloader_single_modality_1, test_dataloader_single_modality_2, test_dataloader_multi_modality, \
         test_dataloader_noisy_single_modality_1, test_dataloader_noisy_multi_modality, global_dataloader, user_dataloaders
 

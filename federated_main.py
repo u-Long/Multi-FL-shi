@@ -531,7 +531,10 @@ if __name__ == '__main__':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     elif args.dataset == 'MMAct':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
-    train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
+    # train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
+    train_dataloader, test_dataloader, user_groups = get_dataset(args, n_list, k_list)
+    
+    
     # for i in range(5):
     #     print(len(user_groups[i])) #52 !!!!!!!!!!!!!!!!!
     # ## unimodel
@@ -692,6 +695,17 @@ if __name__ == '__main__':
             else:
                 local_model = UnitFeature(hidden_dim=256, lstm_layers=2, bidirectional=bidirectional)
                 local_classifier = DualModalClassifier(args)         
+        elif args.dataset == "MMAct":
+            if i<8:
+                local_model = ImageFeature()
+                local_classifier = FeatureClassifier(args)
+            elif i>=8 and i<16:
+                bidirectional = True
+                local_model = TXTFeature(hidden_dim=256, lstm_layers=2, bidirectional=bidirectional)
+                local_classifier = FeatureClassifier(args)
+            else:
+                local_model = UnitFeature(hidden_dim=256, lstm_layers=2, bidirectional=bidirectional)
+                local_classifier = DualModalClassifier(args)            
 
 
         local_model.to(args.device)

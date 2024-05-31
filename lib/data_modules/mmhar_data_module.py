@@ -201,11 +201,11 @@ class MMHarDataModule(LightningDataModule, metaclass=ABCMeta):
         train_dataset = self._create_train_dataset()
         test_dataset = self._create_test_dataset()
         drop_last_ssl = bool(self.ssl)
-        self.train = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=drop_last_ssl, num_workers=self.num_workers, pin_memory=True)
-        self.test = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=False, num_workers=self.num_workers, pin_memory=True)
+        self.train = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True, num_workers=self.num_workers, pin_memory=True)
+        self.test = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True, num_workers=self.num_workers, pin_memory=True)
         if "val" in self.split:
             val_dataset = self._create_val_dataset()
-            self.val = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True, drop_last=drop_last_ssl, num_workers=self.num_workers, pin_memory=True)
+            self.val = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True, num_workers=self.num_workers, pin_memory=True)
         else:
             self.val = None
 
