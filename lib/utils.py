@@ -22,6 +22,18 @@ from UMPC_Dataset import UMPC_FoodDataset, CustomDataset
 import os
 from datetime import datetime
 
+from typing import List
+from torchvision import transforms
+
+import datasets.mmact as mmact
+from data_modules.mmhar_data_module import MMHarDataset, MMHarDataModule
+from data_modules.mmact_data_module import MMActDataModule
+from data_modules.utd_mhad_data_module import UTDDataModule
+from transforms.inertial_transforms import InertialSampler
+from transforms.inertial_augmentations import Jittering
+from transforms.skeleton_transforms import SkeletonSampler
+from transforms.general_transforms import ToTensor, ToFloat
+
 trans_cifar10_train = transforms.Compose([transforms.RandomCrop(32, padding=4),
                                           transforms.RandomHorizontalFlip(),
                                           transforms.ToTensor(),
@@ -593,6 +605,92 @@ def get_dataset(args, n_list, k_list):
         # else:
         #     client_datasets_noniid = federated_split(Train_set, num_clients=20, alpha=0.5)
         #     user_dataloaders = [DataLoader(dataset, batch_size=100, num_workers=16, shuffle=True) for dataset in client_datasets_noniid]
+    elif args.dataset == 'MMAct':
+        train_transforms = {
+            "inertial": transforms.Compose([ToTensor(), ToFloat(), Jittering(0.05), InertialSampler(150)]),
+            "skeleton": SkeletonSampler(150)
+        }
+        data_module = MMActDataModule(batch_size=8, train_transforms=train_transforms)
+        data_module.setup()
+        train_dataloader = data_module.train_dataloader()
+        val_dataloader = data_module.val_dataloader()
+        test_dataloader = data_module.test_dataloader()
+
+        # 计算训练集、验证集、测试集样本数量
+        train_size = sum(len(batch['label']) for batch in train_dataloader)
+        # val_size = sum(len(batch['label']) for batch in val_dataloader)
+        # test_size = sum(len(batch['label']) for batch in test_dataloader)
+
+        print(f"训练集样本数量: {train_size}")
+        # print(f"验证集样本数量: {val_size}")
+        # print(f"测试集样本数量: {test_size}")
+        def create_user_dataloaders_with_dirichlet(data_module, num_clients=20, alpha=0.5):
+            data_module.setup()
+            
+            dataset = data_module.train_dataloader().dataset
+            labels = dataset.data_tables[dataset.modalities[0]]['label'].values
+            num_samples = len(labels)
+            num_classes = len(np.unique(labels))
+
+            # Create a Dirichlet distribution with the given alpha value
+            label_distribution = np.random.dirichlet([alpha] * num_clients, num_classes)
+
+            # Create a list to hold the indices for each client
+            client_indices = {i: [] for i in range(num_clients)}
+
+            for c in range(num_classes):
+                # Get indices of all samples with label c
+                class_indices = np.where(labels == c)[0]
+                np.random.shuffle(class_indices)
+
+                # Split these indices according to the label distribution
+                class_splits = np.split(class_indices, (label_distribution[c] * len(class_indices)).astype(int).cumsum()[:-1])
+                for i, split in enumerate(class_splits):
+                    client_indices[i].extend(split)
+
+            user_dataloaders = {}
+
+            for client_id, indices in client_indices.items():
+                subset = Subset(dataset, indices)
+                user_dataloaders[client_id] = DataLoader(subset, batch_size=data_module.batch_size, shuffle=True, num_workers=data_module.num_workers)
+
+            return user_dataloaders
+
+        def create_user_dataloaders_iid(data_module, num_clients=20):
+            data_module.setup()
+            
+            dataset = data_module.train_dataloader().dataset
+            all_indices = list(range(len(dataset)))
+            np.random.shuffle(all_indices)
+
+            user_dataloaders = {}
+            samples_per_client = len(all_indices) // num_clients
+
+            for client_id in range(num_clients):
+                start_idx = client_id * samples_per_client
+                end_idx = start_idx + samples_per_client
+                indices = all_indices[start_idx:end_idx]
+
+                subset = Subset(dataset, indices)
+                user_dataloaders[client_id] = DataLoader(subset, batch_size=data_module.batch_size, shuffle=True, num_workers=data_module.num_workers)
+
+            return user_dataloaders
+        # 创建 non-iid 和 iid 的 user_dataloaders
+        noniid_user_dataloaders = create_user_dataloaders_with_dirichlet(data_module, num_clients=20, alpha=0.5)
+        iid_user_dataloaders = create_user_dataloaders_iid(data_module, num_clients=20)
+
+        # 打印客户端数据
+        print("Non-IID 分配:")
+        for client_id, dataloader in noniid_user_dataloaders.items():
+            print(f"客户端 {client_id} 的样本数量: {sum(len(batch['label']) for batch in dataloader)}")
+
+        print("IID 分配:")
+        for client_id, dataloader in iid_user_dataloaders.items():
+            print(f"客户端 {client_id} 的样本数量: {sum(len(batch['label']) for batch in dataloader)}")
+        if args.iid:
+            user_dataloaders = iid_user_dataloaders
+        else:
+            user_dataloaders = noniid_user_dataloaders
 
     return train_dataloader_single_modality_1, train_dataloader, test_dataloader_single_modality_1, test_dataloader_single_modality_2, test_dataloader_multi_modality, \
         test_dataloader_noisy_single_modality_1, test_dataloader_noisy_multi_modality, global_dataloader, user_dataloaders

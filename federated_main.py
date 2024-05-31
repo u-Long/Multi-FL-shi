@@ -529,6 +529,8 @@ if __name__ == '__main__':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     elif args.dataset == 'UMPC':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
+    elif args.dataset == 'MMAct':
+        k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
     # for i in range(5):
     #     print(len(user_groups[i])) #52 !!!!!!!!!!!!!!!!!
