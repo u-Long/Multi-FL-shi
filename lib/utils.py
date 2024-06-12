@@ -12,13 +12,13 @@ from torchvision import datasets, transforms
 from sampling import mnist_iid, mnist_noniid, mnist_noniid_unequal, mnist_noniid_lt
 from sampling import femnist_iid, femnist_noniid, femnist_noniid_unequal, femnist_noniid_lt
 from sampling import cifar_iid, cifar100_noniid, cifar10_noniid, cifar100_noniid_lt, cifar10_noniid_lt
-from cosmo.data_pre import load_data, Multimodal_dataset, SingleModalityDataset, uni_CustomDataset # CustomDataset
+from cosmo.data_pre import load_data, Multimodal_dataset, SingleModalityDataset, uni_CustomDataset, CustomDataset
 import femnist
 import numpy as np
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from UMPC_Dataset import UMPC_FoodDataset, CustomDataset
+from UMPC_Dataset import UMPC_FoodDataset # CustomDataset
 import os
 from datetime import datetime
 
@@ -324,21 +324,24 @@ def get_dataset(args, n_list, k_list):
         single_modality_indices = indices[:split_point]
         multi_modality_indices = indices[split_point:]
 
-        x_test_1_single = x_test_1[single_modality_indices]
-        x_test_2_single = x_test_2[single_modality_indices]
-        y_test_single = y_test[single_modality_indices]
+        # x_test_1_single = x_test_1[single_modality_indices]
+        # x_test_2_single = x_test_2[single_modality_indices]
+        # y_test_single = y_test[single_modality_indices]
 
-        x_test_1_multi = x_test_1[multi_modality_indices]
-        x_test_2_multi = x_test_2[multi_modality_indices]
-        y_test_multi = y_test[multi_modality_indices]
+        # x_test_1_multi = x_test_1[multi_modality_indices]
+        # x_test_2_multi = x_test_2[multi_modality_indices]
+        # y_test_multi = y_test[multi_modality_indices]
 
         # Create single-modality datasets for modality 1 and modality 2
-        test_dataset_single_modality_1 = SingleModalityDataset(x_test_1_single, y_test_single)
-        test_dataset_single_modality_2 = SingleModalityDataset(x_test_2_single, y_test_single)
-        test_dataset_multi_modality = Multimodal_dataset(x_test_1_multi, x_test_2_multi, y_test_multi)
+        test_dataset_single_modality_1 = SingleModalityDataset(x_test_1, y_test)
+        test_dataset_single_modality_2 = SingleModalityDataset(x_test_2, y_test)
+        test_dataset_multi_modality = Multimodal_dataset(x_test_1, x_test_2, y_test)
 
         train_dataloader = torch.utils.data.DataLoader(
             train_dataset, batch_size=args.batch_size,
+            num_workers=args.num_workers, pin_memory=True, shuffle=True)
+        test_dataloader = torch.utils.data.DataLoader(
+            test_dataset, batch_size=args.batch_size,
             num_workers=args.num_workers, pin_memory=True, shuffle=True)
         test_dataloader_single_modality_1 = torch.utils.data.DataLoader(
             test_dataset_single_modality_1, batch_size=args.batch_size,
@@ -363,8 +366,8 @@ def get_dataset(args, n_list, k_list):
         x_test_1_noisy = add_noise(x_test_1, noise_level)
         x_test_2_noisy = add_noise(x_test_2, noise_level)
 
-        test_dataset_noisy_single_modality_1 = SingleModalityDataset(x_test_1_noisy[single_modality_indices], y_test_single)
-        test_dataset_noisy_multi_modality = Multimodal_dataset(x_test_1_noisy[multi_modality_indices], x_test_2_noisy[multi_modality_indices], y_test_multi)
+        test_dataset_noisy_single_modality_1 = SingleModalityDataset(x_test_1_noisy, y_test)
+        test_dataset_noisy_multi_modality = Multimodal_dataset(x_test_1_noisy, x_test_2_noisy, y_test)
 
         test_dataloader_noisy_single_modality_1 = DataLoader(test_dataset_noisy_single_modality_1, batch_size=args.batch_size, num_workers=args.num_workers, pin_memory=True, shuffle=True)
         test_dataloader_noisy_multi_modality = DataLoader(test_dataset_noisy_multi_modality, batch_size=args.batch_size, num_workers=args.num_workers, pin_memory=True, shuffle=True)
@@ -675,12 +678,12 @@ def get_dataset(args, n_list, k_list):
 
             for client_id, indices in client_indices.items():
                 subset = Subset(dataset, indices)
-                if client_id < 8:
-                    # Clients 1-8: only inertial data
-                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['inertial'].iloc[i].loc["modality"] == "inertial"])
-                elif client_id < 16:
-                    # Clients 9-16: only skeleton data
-                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['skeleton'].iloc[i].loc["modality"] == "skeleton"])
+                # if client_id < 8:
+                #     # Clients 1-8: only inertial data
+                #     subset = Subset(dataset, [i for i in indices if dataset.data_tables['inertial'].iloc[i].loc["modality"] == "inertial"])
+                # elif client_id < 16:
+                #     # Clients 9-16: only skeleton data
+                #     subset = Subset(dataset, [i for i in indices if dataset.data_tables['skeleton'].iloc[i].loc["modality"] == "skeleton"])
                 # Clients 17-20: both inertial and skeleton data (no need to filter)
                 
                 user_dataloaders[client_id] = DataLoader(subset, batch_size=data_module.batch_size, shuffle=True, num_workers=data_module.num_workers)
@@ -703,34 +706,107 @@ def get_dataset(args, n_list, k_list):
                 indices = all_indices[start_idx:end_idx]
 
                 subset = Subset(dataset, indices)
-                if client_id < 8:
-                    # Clients 1-8: only inertial data
-                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['inertial'].iloc[i].loc["modality"] == "inertial"])
-                elif client_id < 16:
-                    # Clients 9-16: only skeleton data
-                    subset = Subset(dataset, [i for i in indices if dataset.data_tables['skeleton'].iloc[i].loc["modality"] == "skeleton"])
+                # if client_id < 8:
+                #     # Clients 1-8: only inertial data
+                #     subset = Subset(dataset, [i for i in indices if dataset.data_tables['inertial'].iloc[i].loc["modality"] == "inertial"])
+                # elif client_id < 16:
+                #     # Clients 9-16: only skeleton data
+                #     subset = Subset(dataset, [i for i in indices if dataset.data_tables['skeleton'].iloc[i].loc["modality"] == "skeleton"])
                 # Clients 17-20: both inertial and skeleton data (no need to filter)
                 
                 user_dataloaders[client_id] = DataLoader(subset, batch_size=data_module.batch_size, shuffle=True, num_workers=data_module.num_workers)
 
             return user_dataloaders
-        # 创建 non-iid 和 iid 的 user_dataloaders
-        noniid_user_dataloaders = create_user_dataloaders_with_dirichlet(data_module, num_clients=20, alpha=0.5)
-        iid_user_dataloaders = create_user_dataloaders_iid(data_module, num_clients=20)
-
-        # 打印客户端数据
-        print("Non-IID 分配:")
-        for client_id, dataloader in noniid_user_dataloaders.items():
-            print(f"客户端 {client_id} 的样本数量: {sum(len(batch['label']) for batch in dataloader)}")
-
-        print("IID 分配:")
-        for client_id, dataloader in iid_user_dataloaders.items():
-            print(f"客户端 {client_id} 的样本数量: {sum(len(batch['label']) for batch in dataloader)}")
+        
         if args.iid:
+            iid_user_dataloaders = create_user_dataloaders_iid(data_module, num_clients=20)
+            print("IID 分配:")
+            # for client_id, dataloader in iid_user_dataloaders.items():
+            #     print(f"客户端 {client_id} 的样本数量: {sum(len(batch['label']) for batch in dataloader)}")
             user_dataloaders = iid_user_dataloaders
         else:
+            noniid_user_dataloaders = create_user_dataloaders_with_dirichlet(data_module, num_clients=20, alpha=0.5)
+            print("Non-IID 分配:")
+            for client_id, dataloader in noniid_user_dataloaders.items():
+                print(f"客户端 {client_id} 的样本数量: {sum(len(batch['label']) for batch in dataloader)}")
             user_dataloaders = noniid_user_dataloaders
-    return train_dataloader, test_dataloader, user_dataloaders
+        # # 获取客户端1的dataloader
+        # client1_dataloader = user_dataloaders[0]
+
+        # # 获取第一个批次的数据
+        # first_batch = next(iter(client1_dataloader))
+
+        # # 打印每个键的形状
+        # for key, value in first_batch.items():
+        #     print(f"{key} shape: {value.shape}")
+            # label shape: torch.Size([8])
+            # idx shape: torch.Size([8])
+            # inertial shape: torch.Size([8, 150, 12])
+            # skeleton shape: torch.Size([8, 17, 2, 150])
+            # 已经调整过顺序了（m1,m2,label)
+    # return train_dataloader, test_dataloader, user_dataloaders
+        def create_single_modality_dataloader(data_module, modality, batch_size=8):
+            # 重新设置数据模块
+            data_module.setup()
+            
+            # 获取训练集和测试集
+            train_dataset = data_module.train_dataloader().dataset
+            test_dataset = data_module.test_dataloader().dataset
+            
+            train_single_modality_data = [(sample[modality], sample['label']) for sample in train_dataset]
+            test_single_modality_data = [(sample[modality], sample['label']) for sample in test_dataset]
+            train_dataloader_single_modality = DataLoader(train_single_modality_data, batch_size=batch_size, shuffle=True, num_workers=data_module.num_workers)
+            test_dataloader_single_modality = DataLoader(test_single_modality_data, batch_size=batch_size, shuffle=True, num_workers=data_module.num_workers)
+            return train_dataloader_single_modality, test_dataloader_single_modality
+
+        train_dataloader_single_modality_1, test_dataloader_single_modality_1 = create_single_modality_dataloader(data_module, modality="inertial", batch_size=8)
+        _, test_dataloader_single_modality_2 = create_single_modality_dataloader(data_module, modality="skeleton", batch_size=8)
+        test_dataloader_multi_modality = test_dataloader
+        # 添加噪声函数
+        def add_noise(data, noise_level):
+            data_std = np.std(data)
+            noise = np.random.normal(0, noise_level * data_std, data.shape)
+            noisy_data = data + noise
+            return noisy_data
+        
+        def create_noisy_single_modality_dataloader(data_module, modality, noise_level, batch_size=8):
+            # 重新设置数据模块
+            data_module.setup()
+            
+            # 获取训练集和测试集
+            test_dataset = data_module.test_dataloader().dataset
+
+            # 创建带噪声的单模态数据集
+            test_noisy_single_modality_data = [(torch.tensor(add_noise(sample[modality], noise_level)), sample['label']) for sample in test_dataset]
+            
+            test_dataloader_noisy_single_modality = DataLoader(test_noisy_single_modality_data, batch_size=batch_size, shuffle=True, num_workers=data_module.num_workers)
+            return test_dataloader_noisy_single_modality
+        
+        def create_noisy_double_modality_dataloader(data_module, modality1, modality2, noise_level, batch_size=8):
+            # 重新设置数据模块
+            data_module.setup()
+            
+            # 获取训练集和测试集
+            test_dataset = data_module.test_dataloader().dataset
+
+            # 创建带噪声的双模态数据集
+            test_noisy_double_modality_data = [(torch.tensor(add_noise(sample[modality1], noise_level)), torch.tensor(add_noise(sample[modality2], noise_level)), sample['label']) for sample in test_dataset]
+            
+            test_dataloader_noisy_double_modality = DataLoader(test_noisy_double_modality_data, batch_size=batch_size, shuffle=True, num_workers=data_module.num_workers)
+            return test_dataloader_noisy_double_modality      
+          
+        test_dataloader_noisy_single_modality_1 = create_noisy_single_modality_dataloader(data_module, modality="inertial", noise_level=0.5, batch_size=8)
+        test_dataloader_noisy_multi_modality = create_noisy_double_modality_dataloader(data_module, modality1="inertial", modality2="skeleton", noise_level=0.5, batch_size=8)
+
+        class EmptyDataset(Dataset):
+            def __len__(self):
+                return 0
+
+            def __getitem__(self, index):
+                raise IndexError
+
+        empty_dataset = EmptyDataset()
+        global_dataloader = DataLoader(empty_dataset, batch_size=1)    
     return train_dataloader_single_modality_1, train_dataloader, test_dataloader_single_modality_1, test_dataloader_single_modality_2, test_dataloader_multi_modality, \
         test_dataloader_noisy_single_modality_1, test_dataloader_noisy_multi_modality, global_dataloader, user_dataloaders
 

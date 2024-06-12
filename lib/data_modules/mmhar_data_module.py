@@ -112,8 +112,8 @@ class MMHarDataset(Dataset, metaclass=ABCMeta):
         """
         data_sample = {}
         label = self.data_tables[self.modalities[0]].iloc[idx].loc["label"]
-        data_sample["label"] = label
-        data_sample["idx"] = idx
+        # data_sample["label"] = label
+        # data_sample["idx"] = idx
 
         for modality in self.modalities:
             path = self.data_tables[modality].iloc[idx].loc["path"]
@@ -129,6 +129,8 @@ class MMHarDataset(Dataset, metaclass=ABCMeta):
 
             else:
                 data_sample[modality] = data
+        data_sample["label"] = label
+        # data_sample["idx"] = idx
 
         return data_sample
 

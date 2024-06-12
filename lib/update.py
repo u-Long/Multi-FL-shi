@@ -161,56 +161,110 @@ class LocalUpdate(object):
         for iter in range(self.args.train_ep):
             batch_loss = {'total':[],'1':[], '2':[], '3':[]}
             agg_protos_label = {}
-            
-            for batch_idx, (m1, _, label_g) in enumerate(self.trainloader):
-                if m1.size(0) < 2:
-                    continue  # 跳过只有一个样本的批次
-                m1, labels = m1.to(self.device), label_g.to(self.device)
-                
-                model.zero_grad()
-                classifier.zero_grad()
-                optimizer.zero_grad()
-                protos = model(m1) # (bsz,特征维度)
-                log_probs = classifier(protos)
-                loss1 = self.criterion(log_probs, labels)
-                # food torch.Size([64, 128, 14, 14])
-                # print("m1", protos.shape) # [8, 16, 118, 4],[8,128]
-                loss_mse = nn.MSELoss()
-                
-                if len(global_protos) == 0:
-                    loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
-                else:
-                    proto_new = copy.deepcopy(protos.data)
-                    i = 0
-                    for label in labels: # （bsz，）
-                        if label.item() in global_protos.keys():
-                            proto_new[i, :] = global_protos[label.item()][0].data
-                        i += 1
-                    loss2 = loss_mse(proto_new, protos)
+            if args.dataset == 'MMAct':
+                for batch_idx, batch in enumerate(self.trainloader):
+                    m1 = batch['inertial']
+                    label_g = batch['label']
+                    if m1.size(0) < 2:
+                        continue  # 跳过只有一个样本的批次
+                    m1, labels = m1.to(self.device), label_g.to(self.device)
+                    
+                    model.zero_grad()
+                    classifier.zero_grad()
+                    optimizer.zero_grad()
+                    protos = model(m1.unsqueeze(1)) # (bsz,特征维度)
+                    log_probs = classifier(protos)
+                    loss1 = self.criterion(log_probs, labels)
+                    # food torch.Size([64, 128, 14, 14])
+                    # print("m1", protos.shape) # [8, 16, 118, 4],[8,128]
+                    # mmact [bsz,16,148,10]
+                    loss_mse = nn.MSELoss()
+                    
+                    if len(global_protos) == 0:
+                        loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                    else:
+                        proto_new = copy.deepcopy(protos.data)
+                        i = 0
+                        for label in labels: # （bsz，）
+                            if label.item() in global_protos.keys():
+                                proto_new[i, :] = global_protos[label.item()][0].data
+                            i += 1
+                        loss2 = loss_mse(proto_new, protos)
 
-                loss = loss1 + loss2 * args.ld
-                loss.backward()
-                optimizer.step()
-                
-                for i in range(len(labels)):
-                    label = label_g[i].item()
-                    if label not in agg_protos_label:
-                        agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
+                    loss = loss1 + loss2 * args.ld
+                    loss.backward()
+                    optimizer.step()
+                    
+                    for i in range(len(labels)):
+                        label = label_g[i].item()
+                        if label not in agg_protos_label:
+                            agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
 
-                    agg_protos_label[label][0].append(protos[i,:])
+                        agg_protos_label[label][0].append(protos[i,:])
 
-                log_probs = log_probs[:, 0:args.num_classes]
-                _, y_hat = log_probs.max(1)
-                acc_val = torch.eq(y_hat, labels.squeeze()).float().mean()
+                    log_probs = log_probs[:, 0:args.num_classes]
+                    _, y_hat = log_probs.max(1)
+                    acc_val = torch.eq(y_hat, labels.squeeze()).float().mean()
 
-                if batch_idx == len(self.trainloader) - 2:
-                    print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
-                        global_round, idx, iter, 
-                        loss.item(),
-                        acc_val.item()))
-                batch_loss['total'].append(loss.item())
-                batch_loss['1'].append(loss1.item())
-                batch_loss['2'].append(loss2.item())
+                    if batch_idx == len(self.trainloader) - 2:
+                        print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
+                            global_round, idx, iter, 
+                            loss.item(),
+                            acc_val.item()))
+                    batch_loss['total'].append(loss.item())
+                    batch_loss['1'].append(loss1.item())
+                    batch_loss['2'].append(loss2.item())      
+            else:          
+                for batch_idx, (m1, _, label_g) in enumerate(self.trainloader):
+                    if m1.size(0) < 2:
+                        continue  # 跳过只有一个样本的批次
+                    m1, labels = m1.to(self.device), label_g.to(self.device)
+                    
+                    model.zero_grad()
+                    classifier.zero_grad()
+                    optimizer.zero_grad()
+                    protos = model(m1) # (bsz,特征维度)
+                    log_probs = classifier(protos)
+                    loss1 = self.criterion(log_probs, labels)
+                    # food torch.Size([64, 128, 14, 14])
+                    # print("m1", protos.shape) # [8, 16, 118, 4],[8,128]
+                    # mmact [bsz,16,148,10]
+                    loss_mse = nn.MSELoss()
+                    
+                    if len(global_protos) == 0:
+                        loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                    else:
+                        proto_new = copy.deepcopy(protos.data)
+                        i = 0
+                        for label in labels: # （bsz，）
+                            if label.item() in global_protos.keys():
+                                proto_new[i, :] = global_protos[label.item()][0].data
+                            i += 1
+                        loss2 = loss_mse(proto_new, protos)
+
+                    loss = loss1 + loss2 * args.ld
+                    loss.backward()
+                    optimizer.step()
+                    
+                    for i in range(len(labels)):
+                        label = label_g[i].item()
+                        if label not in agg_protos_label:
+                            agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
+
+                        agg_protos_label[label][0].append(protos[i,:])
+
+                    log_probs = log_probs[:, 0:args.num_classes]
+                    _, y_hat = log_probs.max(1)
+                    acc_val = torch.eq(y_hat, labels.squeeze()).float().mean()
+
+                    if batch_idx == len(self.trainloader) - 2:
+                        print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
+                            global_round, idx, iter, 
+                            loss.item(),
+                            acc_val.item()))
+                    batch_loss['total'].append(loss.item())
+                    batch_loss['1'].append(loss1.item())
+                    batch_loss['2'].append(loss2.item())
             epoch_loss['total'].append(sum(batch_loss['total'])/len(batch_loss['total']))
             epoch_loss['1'].append(sum(batch_loss['1']) / len(batch_loss['1']))
             epoch_loss['2'].append(sum(batch_loss['2']) / len(batch_loss['2']))
@@ -269,6 +323,7 @@ class LocalUpdate(object):
                 log_probs = classifier(protos)
                 loss1 = self.criterion(log_probs, labels)
                 # print("m2", protos.shape)[8, 16, 24, 7, 1]
+                #mmact (bsz, 16, 134, 4, 1)
                 loss_mse = nn.MSELoss()
                 if len(global_protos) == 0:
                     loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
@@ -1321,9 +1376,9 @@ def test_inference_new_het_lt(flag, args, local_model_list, local_classifier_lis
     acc_list_g = []
     acc_list_l = []
     loss_list = []
-    model1 = agg_model_m1(local_model_list)
-    model2 = agg_model_m2(local_model_list)
-    model12 = agg_model_mm(local_model_list) #local_model_list[-1] # agg_model(local_model_list)
+    model1 = agg_model_m1(local_model_list, args)
+    model2 = agg_model_m2(local_model_list, args)
+    model12 = agg_model_mm(local_model_list, args) #local_model_list[-1] # agg_model(local_model_list)
     classifier1, classifier2, classifier12 = aggregate_classifiers(local_classifier_list, args) # agg_linear_classifier_attn(local_classifier_list, args) # local_classifier_list[-1]
     model1.to(args.device)
     model2.to(args.device)
@@ -1535,7 +1590,7 @@ def test_inference_new_het_lt(flag, args, local_model_list, local_classifier_lis
 
     return acc_list_l, acc_list_g, loss_list
 
-def agg_model_m1(local_model_list):
+def agg_model_m1(local_model_list, args):
     # 筛选出所有的 MyUTDModelFeature 实例
     my_utd_model_features = [model for model in local_model_list if isinstance(model, MyUTDModelFeature1)]
     
@@ -1544,8 +1599,10 @@ def agg_model_m1(local_model_list):
         raise ValueError("No MyUTDModelFeature1 instances found in the provided local_model_list.")
     
     # 初始化新的 MyUTDModelFeature
-    aggregated_model = MyUTDModelFeature1(input_size=1)
-
+    if args.dataset == 'UTD':
+        aggregated_model = MyUTDModelFeature1(input_size=1, p1_size=7552)
+    elif args.dataset == 'MMAct':
+        aggregated_model = MyUTDModelFeature1(input_size=1, p1_size=23680)
     # 聚合 head_1 的权重
     head_1_weights = [model.head_1.state_dict() for model in my_utd_model_features]
     avg_head_1_weights = average_state_dicts(head_1_weights)
@@ -1558,7 +1615,7 @@ def agg_model_m1(local_model_list):
 
     return aggregated_model
 
-def agg_model_m2(local_model_list):
+def agg_model_m2(local_model_list, args):
     # 筛选出所有的 MyUTDModelFeature 实例
     my_utd_model_features = [model for model in local_model_list if isinstance(model, MyUTDModelFeature2)]
     
@@ -1567,7 +1624,10 @@ def agg_model_m2(local_model_list):
         raise ValueError("No MyUTDModelFeature2 instances found in the provided local_model_list.")
     
     # 初始化新的 MyUTDModelFeature
-    aggregated_model = MyUTDModelFeature2(input_size=1)
+    if args.dataset == 'UTD':
+        aggregated_model = MyUTDModelFeature2(1, 2688, args.dataset)
+    elif args.dataset == 'MMAct':
+        aggregated_model = MyUTDModelFeature2(1, 8576, args.dataset)
 
     # 聚合 head_2 的权重
     head_2_weights = [model.head_2.state_dict() for model in my_utd_model_features]
@@ -1581,7 +1641,7 @@ def agg_model_m2(local_model_list):
 
     return aggregated_model
 
-def agg_model_mm(local_model_list):
+def agg_model_mm(local_model_list, args):
     # 筛选出所有的 MyUTDModelFeature 实例
     my_utd_model_features = [model for model in local_model_list if isinstance(model, MyUTDModelFeature)]
     
@@ -1590,7 +1650,10 @@ def agg_model_mm(local_model_list):
         raise ValueError("No MyUTDModelFeature instances found in the provided local_model_list.")
     
     # 初始化新的 MyUTDModelFeature
-    aggregated_model = MyUTDModelFeature(input_size=1)
+    if args.dataset == 'UTD':
+        aggregated_model = MyUTDModelFeature(1, 7552, 2688, args.dataset)
+    elif args.dataset == 'MMAct':
+        aggregated_model = MyUTDModelFeature(1, 23680, 8576, args.dataset)
 
     # 聚合 head_1 的权重
     head_1_weights = [model.head_1.state_dict() for model in my_utd_model_features]
@@ -1663,12 +1726,20 @@ def agg_linear_classifier_attn(local_model_list, args):
 
 def aggregate_classifiers(local_model_list, args):
     """ 返回三个聚合后的模型。 """
-    if len(local_model_list) < 5:
-        raise ValueError("local_model_list should have at least 5 models.")
+    if args.dataset == 'UTD':
+        if len(local_model_list) < 5:
+            raise ValueError("local_model_list should have at least 5 models.")
 
-    model1 = agg_linear_classifier_attn(local_model_list[:2], args)
-    model2 = agg_linear_classifier_attn(local_model_list[2:4], args)
-    model3 = agg_linear_classifier_attn([local_model_list[4]], args)
+        model1 = agg_linear_classifier_attn(local_model_list[:2], args)
+        model2 = agg_linear_classifier_attn(local_model_list[2:4], args)
+        model3 = agg_linear_classifier_attn([local_model_list[4]], args)
+    elif args.dataset == 'MMAct':
+        if len(local_model_list) < 20:
+            raise ValueError("local_model_list should have at least 5 models.")
+
+        model1 = agg_linear_classifier_attn(local_model_list[:8], args)
+        model2 = agg_linear_classifier_attn(local_model_list[8:16], args)
+        model3 = agg_linear_classifier_attn([local_model_list[16:]], args)
 
     return model1, model2, model3
 
@@ -1689,9 +1760,9 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
     device = args.device
 
     # Initialize models
-    model1 = agg_model_m1(local_model_list)
-    model2 = agg_model_m2(local_model_list)
-    model12 = agg_model_mm(local_model_list)
+    model1 = agg_model_m1(local_model_list, args)
+    model2 = agg_model_m2(local_model_list, args)
+    model12 = agg_model_mm(local_model_list, args)
     model1.to(device)
     model2.to(device)
     model12.to(device)
@@ -1784,20 +1855,21 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
         print(f'| Test Accuracy with multimodality: {acc:.5f}')
         return acc_list, loss_list
     # 不聚合模型的话，就是这样单客户端测试
-    print("client:0")
-    acc_list_g1 = evaluate_single_modality(local_model_list[0], test_dataloader1, global_protos, 1)
-    print("client:1")
-    acc_list_g1 = evaluate_single_modality(local_model_list[1], test_dataloader1, global_protos, 1)
-    print("client:2")
-    acc_list_g2 = evaluate_single_modality(local_model_list[2], test_dataloader2, global_protos, 2)
-    print("client:3")
-    acc_list_g2 = evaluate_single_modality(local_model_list[3], test_dataloader2, global_protos, 2)
-    print("client:4")
-    acc_list_g12, loss_list12 = evaluate_multimodality(local_model_list[4], test_dataloader12, global_protos)
+    # print("client:0")
+    # acc_list_g1 = evaluate_single_modality(local_model_list[0], test_dataloader1, global_protos, 1)
+    # print("client:1")
+    # acc_list_g1 = evaluate_single_modality(local_model_list[1], test_dataloader1, global_protos, 1)
+    # print("client:2")
+    # acc_list_g2 = evaluate_single_modality(local_model_list[2], test_dataloader2, global_protos, 2)
+    # print("client:3")
+    # acc_list_g2 = evaluate_single_modality(local_model_list[3], test_dataloader2, global_protos, 2)
+    # print("client:4")
+    # acc_list_g12, loss_list12 = evaluate_multimodality(local_model_list[4], test_dataloader12, global_protos)
+    
     # 聚合模型后可以一类测试
-    # acc_list_g1 = evaluate_single_modality(model1, test_dataloader1, global_protos, 1)
-    # acc_list_g2 = evaluate_single_modality(model2, test_dataloader2, global_protos, 2)
-    # acc_list_g12, loss_list12 = evaluate_multimodality(model12, test_dataloader12, global_protos)
+    acc_list_g1 = evaluate_single_modality(model1, test_dataloader1, global_protos, 1)
+    acc_list_g2 = evaluate_single_modality(model2, test_dataloader2, global_protos, 2)
+    acc_list_g12, loss_list12 = evaluate_multimodality(model12, test_dataloader12, global_protos)
     return acc_list_g1, acc_list_g2, acc_list_g12, loss_list12
 
 def test_unimodal(args, local_model_list, test_dataset1, local_classifier_list):
@@ -1956,9 +2028,13 @@ def test_inference_new_het_cifar(args, local_model_list, test_dataset, global_pr
 def aggregate_global_models(local_model_list, local_classifier_list, user_groups, args):
     # 初始化全局模型并移动到指定设备上
     imu_cnn_global = cnn_layers_1(input_size=1).to(args.device)
-    ske_cnn_global = cnn_layers_2(input_size=1).to(args.device)
-    head1_global = HeadModule(7552, 128).to(args.device)
-    head2_global = HeadModule(2688, 128).to(args.device)
+    ske_cnn_global = cnn_layers_2(1, args.dataset).to(args.device)
+    if args.dataset == "UTD":
+        head1_global = HeadModule(7552, 128).to(args.device)
+        head2_global = HeadModule(2688, 128).to(args.device)
+    elif args.dataset == "MMAct":
+        head1_global = HeadModule(23680, 128).to(args.device)
+        head2_global = HeadModule(8576, 128).to(args.device)        
     classifier_1_global = FeatureClassifier(args).to(args.device)
     classifier_2_global = FeatureClassifier(args).to(args.device)
 
@@ -2037,7 +2113,10 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
         head2_global.load_state_dict(avg_head2_weights)
 
     # 聚合 classifier_1_global 的权重
-    classifier_1_indices = [0, 1, 4]
+    if args.dataset == 'UTD':
+        classifier_1_indices = [0, 1, 4]
+    elif args.dataset == 'MMAct':
+        classifier_1_indices = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19]
     classifier_list_1 = [local_classifier_list[i].state_dict() if i < 2 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
     c1_data_sizes = [client_data_sizes[i] for i in classifier_1_indices]
     total_c1_data_size = sum(c1_data_sizes)
@@ -2046,7 +2125,10 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
     classifier_1_global.load_state_dict(avg_classifier_1_weights)
 
     # 聚合 classifier_2_global 的权重
-    classifier_2_indices = [2, 3, 4]
+    if args.dataset == 'UTD':
+        classifier_2_indices = [2, 3, 4]
+    elif args.dataset == 'MMAct':
+        classifier_2_indices = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
     classifier_list_2 = [local_classifier_list[i].state_dict() if i < 4 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
     c2_data_sizes = [client_data_sizes[i] for i in classifier_2_indices]
     total_c2_data_size = sum(c2_data_sizes)
@@ -2068,12 +2150,12 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
     # 将聚合后的分类器权重重新分配给本地分类器
     for i, local_classifier in enumerate(local_classifier_list):
         if i in classifier_1_indices:
-            if i == 4:
+            if (args.dataset == 'UTD' and i == 4) or (args.dataset == 'MMAct' and i in [16, 17, 18, 19]):
                 local_classifier.classifier_modality_1.load_state_dict(classifier_1_global.state_dict())
             else:
                 local_classifier.load_state_dict(classifier_1_global.state_dict())
         if i in classifier_2_indices:
-            if i == 4:
+            if (args.dataset == 'UTD' and i == 4) or (args.dataset == 'MMAct' and i in [16, 17, 18, 19]):
                 local_classifier.classifier_modality_2.load_state_dict(classifier_2_global.state_dict())
             else:
                 local_classifier.load_state_dict(classifier_2_global.state_dict())

@@ -200,49 +200,54 @@ class cnn_layers_1(nn.Module):
 
 class cnn_layers_2(nn.Module):
     """
-    CNN layers applied on acc sensor data to generate pre-softmax
+    CNN layers applied on skeletal data with different configurations
+    based on the dataset type.
     ---
     params for __init__():
         input_size: e.g. 1
-        num_classes: e.g. 6
+        dataset: e.g. 'UTD' or 'MMAct'
     forward():
         Input: data
         Output: pre-softmax
     """
-    def __init__(self, input_size):
+    def __init__(self, input_size, dataset):
         super().__init__()
+
+        if dataset == 'UTD':
+            conv2 = nn.Conv3d(64, 64, [5, 5, 2])
+        elif dataset == 'MMAct':
+            conv2 = nn.Conv3d(64, 64, [5, 5, 1])
+        else:
+            raise ValueError("Unsupported dataset type")
 
         # Extract features, 3D conv layers
         self.features = nn.Sequential(
-            nn.Conv3d(input_size, 64, [5,5,2]),
+            nn.Conv3d(input_size, 64, [5, 5, 2]),
             nn.BatchNorm3d(64),
             nn.ReLU(inplace=True),
             nn.Dropout(),
 
-            nn.Conv3d(64, 64, [5,5,2]),
+            conv2,
             nn.BatchNorm3d(64),
             nn.ReLU(inplace=True),
             nn.Dropout(),
 
-            nn.Conv3d(64, 32, [5,5,1]),
+            nn.Conv3d(64, 32, [5, 5, 1]),
             nn.BatchNorm3d(32),
             nn.ReLU(inplace=True),
             nn.Dropout(),
 
-            nn.Conv3d(32, 16, [5,2,1]),
+            nn.Conv3d(32, 16, [5, 2, 1]),
             nn.BatchNorm3d(16),
             nn.ReLU(inplace=True),
-
-            )
-        # self.apply(init_weights)
-
+        )
 
     def forward(self, x):
         x = self.features(x)
-
         return x
+# 因为mmact是17个骨骼点xy二维数据
 
-
+    
 class Encoder1(nn.Module):
     def __init__(self, input_size):
         super().__init__()
@@ -257,10 +262,10 @@ class Encoder1(nn.Module):
 
 
 class Encoder2(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size, dataset):
         super().__init__()
 
-        self.skeleton_cnn_layers = cnn_layers_2(input_size)
+        self.skeleton_cnn_layers = cnn_layers_2(input_size, dataset)
 
     def forward(self, x2):
 
@@ -270,11 +275,11 @@ class Encoder2(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size, dataset):
         super().__init__()
 
         self.imu_cnn_layers = cnn_layers_1(input_size)
-        self.skeleton_cnn_layers = cnn_layers_2(input_size)
+        self.skeleton_cnn_layers = cnn_layers_2(input_size, dataset)
 
     def forward(self, x1, x2):
 
@@ -300,12 +305,12 @@ class HeadModule(nn.Module):
     
 class MyUTDModelFeature1(nn.Module):
     """Model for human-activity-recognition."""
-    def __init__(self, input_size):
+    def __init__(self, input_size, p1_size):
         super().__init__()
 
         self.encoder = Encoder1(input_size)
 
-        self.head_1 = HeadModule(7552, 128)
+        self.head_1 = HeadModule(p1_size, 128) #7552 23680
         # self.apply(init_weights)
 
     def forward(self, x1):
@@ -319,12 +324,12 @@ class MyUTDModelFeature1(nn.Module):
 
 class MyUTDModelFeature2(nn.Module):
     """Model for human-activity-recognition."""
-    def __init__(self, input_size):
+    def __init__(self, input_size, p2_size, dataset):
         super().__init__()
 
-        self.encoder = Encoder2(input_size)
+        self.encoder = Encoder2(input_size, dataset)
 
-        self.head_2 = HeadModule(2688, 128)
+        self.head_2 = HeadModule(p2_size, 128)#2688 8576
         # self.apply(init_weights)
 
     def forward(self, x2):
@@ -338,14 +343,14 @@ class MyUTDModelFeature2(nn.Module):
 
 class MyUTDModelFeature(nn.Module):
     """Model for human-activity-recognition."""
-    def __init__(self, input_size):
+    def __init__(self, input_size, p1_size, p2_size, dataset):
         super().__init__()
 
-        self.encoder = Encoder(input_size)
+        self.encoder = Encoder(input_size, dataset)
 
-        self.head_1 = HeadModule(7552, 128)
+        self.head_1 = HeadModule(p1_size, 128)
 
-        self.head_2 = HeadModule(2688, 128)
+        self.head_2 = HeadModule(p2_size, 128)
         # self.apply(init_weights)
 
     def forward(self, x1, x2):
@@ -471,7 +476,7 @@ class Attn(nn.Module):
     def __init__(self, input_size1, input_size2):
         super().__init__()
 
-        self.reduce_d1 = nn.Linear(input_size1, 1280)#7552 25088
+        self.reduce_d1 = nn.Linear(input_size1, 1280)#7552 25088(UPMC) 
 
         self.reduce_d2 = nn.Linear(input_size2, 1280)#2688 512
 

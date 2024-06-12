@@ -33,6 +33,7 @@ from update import LocalUpdate, save_protos, LocalTest, test_inference_new_het_l
 from models import CNNMnist, CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, SkeletonClassifier, InertialClassifier, FeatureClassifier, DualModalClassifier, LinearClassifierAttn, CustomDataset, TXTFeature, TXTDecoder, ImageFeature, IMGClassifier, UnitFeature,\
 cnn_layers_1, cnn_layers_2, HeadModule
 from utils import get_dataset, average_weights, exp_details, proto_aggregation, agg_func, average_weights_per, average_weights_sem, save_model_parameters_to_log, visualize_prototypes_with_tsne
+from data_modules.mmact_data_module import MMActDataModule
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -79,7 +80,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
         
         for idx in idxs_users:
             local_model = LocalUpdate(args=args, dataset=train_dataset, idxs=user_groups[idx])
-            if args.dataset == 'UMPC':
+            if args.dataset == 'UMPC' or 'MMAct':
                 if idx<8:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m1(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 elif idx>=8 and idx<16:
@@ -127,7 +128,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
 
 
         # 啊哈，我来加一个模型聚合(utd)
-        # local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
+        local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
         
 
         # print(global_protos)
@@ -179,10 +180,10 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
                     w, loss, protos, features = local_model.update_weights_het_m2_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
                 else:
                     w, loss, protos, features = local_model.update_weights_het_mm_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
-            elif args.dataset == 'UMPC':
-                if idx<2:
+            elif args.dataset == 'UMPC' or 'MMAct':
+                if idx<8:
                     w, loss, protos, features = local_model.update_weights_het_m1_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
-                elif idx>=2 and idx<4:
+                elif idx>=8 and idx<16:
                     w, loss, protos, features = local_model.update_weights_het_m2_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
                 else:
                     w, loss, protos, features = local_model.update_weights_het_mm_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
@@ -206,7 +207,7 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
             local_model_list[idx] = local_model
 
         # 啊哈，我来加一个模型聚合(utd)
-        # local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
+        local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
         # update global weights
         global_protos = proto_aggregation(local_protos) # 汇总取平均
         global_features = proto_aggregation(local_features) 
@@ -257,10 +258,10 @@ def FedProto_taskheter3(args, train_dataset, test_dataset1, test_dataset2, test_
                     w, w1, loss, acc, protos = local_model.update_weights_het_m2_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 else:
                     w, w1, loss, acc, protos = local_model.update_weights_het_mm_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
-            elif args.dataset == 'UMPC':
-                if idx<2:
+            elif args.dataset == 'UMPC' or 'MMAct':
+                if idx<8:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m1_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
-                elif idx>=2 and idx<4:
+                elif idx>=8 and idx<16:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m2_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 else:
                     w, w1, loss, acc, protos = local_model.update_weights_het_mm_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
@@ -499,6 +500,9 @@ def adjust_learning_rate(args, optimizer, epoch):
 
 
 if __name__ == '__main__':
+    # TODO
+    '''个人感觉特征和原型这里不要分开搞，有可能圆形拉近了，但特征不近（没试）'''
+    '''数据集单模态划分的时候舍弃了一部分数据，这里可以优化'''
     start_time = time.time()
 
     args = args_parser()
@@ -531,9 +535,10 @@ if __name__ == '__main__':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     elif args.dataset == 'MMAct':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
-    # train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
-    train_dataloader, test_dataloader, user_groups = get_dataset(args, n_list, k_list)
-    
+    train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, \
+       test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
+    # train_dataloader, test_dataloader, user_groups = get_dataset(args, n_list, k_list)
+
     
     # for i in range(5):
     #     print(len(user_groups[i])) #52 !!!!!!!!!!!!!!!!!
@@ -613,9 +618,12 @@ if __name__ == '__main__':
     local_classifier_list_3 = []
     # 声明组件模型参数
     imu_cnn = cnn_layers_1(input_size=1)
-    ske_cnn = cnn_layers_2(input_size=1)
+    ske_cnn = cnn_layers_2(1, args.dataset)
     head1 = HeadModule(7552, 128)
     head2 = HeadModule(2688, 128)
+    head1_mmact = HeadModule(23680, 128)
+    head2_mmact = HeadModule(8576, 128)
+
     classifier_uni = FeatureClassifier(args)
 
     for i in range(args.num_users):
@@ -664,19 +672,19 @@ if __name__ == '__main__':
 
         elif args.dataset == 'UTD':
             if i<2:
-                local_model = MyUTDModelFeature1(input_size=1)
+                local_model = MyUTDModelFeature1(input_size=1, p1_size=7552)
                 local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
                 local_model.head_1.load_state_dict(head1.state_dict())
                 local_classifier = FeatureClassifier(args)
                 local_classifier.load_state_dict(classifier_uni.state_dict())
             elif i>=2 and i<4:
-                local_model = MyUTDModelFeature2(input_size=1)
+                local_model = MyUTDModelFeature2(1, 2688, args.dataset)
                 local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
                 local_model.head_2.load_state_dict(head2.state_dict())
                 local_classifier = FeatureClassifier(args)
                 local_classifier.load_state_dict(classifier_uni.state_dict())
             else:
-                local_model = MyUTDModelFeature(input_size=1)
+                local_model = MyUTDModelFeature(1, 7552, 2688, args.dataset)
                 local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
                 local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
                 local_model.head_1.load_state_dict(head1.state_dict())
@@ -697,15 +705,26 @@ if __name__ == '__main__':
                 local_classifier = DualModalClassifier(args)         
         elif args.dataset == "MMAct":
             if i<8:
-                local_model = ImageFeature()
+                local_model = MyUTDModelFeature1(input_size=1, p1_size=23680)
+                local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
+                local_model.head_1.load_state_dict(head1_mmact.state_dict())
                 local_classifier = FeatureClassifier(args)
+                local_classifier.load_state_dict(classifier_uni.state_dict())
             elif i>=8 and i<16:
-                bidirectional = True
-                local_model = TXTFeature(hidden_dim=256, lstm_layers=2, bidirectional=bidirectional)
+                local_model = MyUTDModelFeature2(1, 8576, args.dataset)
+                local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
+                local_model.head_2.load_state_dict(head2_mmact.state_dict())
                 local_classifier = FeatureClassifier(args)
+                local_classifier.load_state_dict(classifier_uni.state_dict())
             else:
-                local_model = UnitFeature(hidden_dim=256, lstm_layers=2, bidirectional=bidirectional)
-                local_classifier = DualModalClassifier(args)            
+                local_model = MyUTDModelFeature(1, 23680, 8576, args.dataset)
+                local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
+                local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
+                local_model.head_1.load_state_dict(head1_mmact.state_dict())
+                local_model.head_2.load_state_dict(head2_mmact.state_dict())
+                local_classifier = DualModalClassifier(args)
+                local_classifier.classifier_modality_1.load_state_dict(classifier_uni.state_dict())
+                local_classifier.classifier_modality_2.load_state_dict(classifier_uni.state_dict())      
 
 
         local_model.to(args.device)
@@ -718,13 +737,15 @@ if __name__ == '__main__':
             classifier = LinearClassifierAttn(num_classes=args.num_classes, input_size1=7552, input_size2=2688)
         elif args.dataset == 'UMPC':
             classifier = LinearClassifierAttn(num_classes=args.num_classes, input_size1=25088, input_size2=512)
+        elif args.dataset == 'MMAct':
+            classifier = LinearClassifierAttn(num_classes=args.num_classes, input_size1=23680, input_size2=8576)
         classifier.to(args.device)
         classifier.train()
         local_classifier_list_3.append(classifier)
 
-    log_file = "model_parameters_init.log"
-    for i, model in enumerate(local_model_list):
-        save_model_parameters_to_log(model, f"Model_{i}", log_file)
+    # log_file = "model_parameters_init.log"
+    # for i, model in enumerate(local_model_list):
+    #     save_model_parameters_to_log(model, f"Model_{i}", log_file)
 
     if args.mode == 'task_heter':
         global_protos, local_model_list, local_classifier_list = FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_dataset2, test_dataset12, test_noisy_12, user_groups, local_model_list, local_classifier_list)
