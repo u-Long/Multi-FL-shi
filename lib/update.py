@@ -301,62 +301,112 @@ class LocalUpdate(object):
             batch_loss = {'total':[],'1':[], '2':[], '3':[]}
             agg_protos_label = {}
 
-            for batch_idx, (_, m2, label_g) in enumerate(self.trainloader):
-                # print(m2['input_ids'].shape)[64,40]
-                if args.dataset == 'UMPC':
-                    if m2['input_ids'].size(0) < 2:
-                        continue  # 跳过只有一个样本的批次
-                    input_ids, attention_mask, labels = m2['input_ids'].to(self.device), m2['attention_mask'].to(self.device), label_g.to(self.device)
-                    model.zero_grad()
-                    classifier.zero_grad()
-                    optimizer.zero_grad()
-                    protos = model(input_ids, attention_mask) # (bsz,特征维度)
-                    # print("m2", protos.shape) # [64, 512]
-                elif args.dataset == 'UTD':
+            if args.dataset == 'MMAct':
+                for batch_idx, batch in enumerate(self.trainloader):
+                    m2 = batch['skeleton']
+                    label_g = batch['label']
                     if m2.size(0) < 2:
                         continue  # 跳过只有一个样本的批次
                     m2, labels = m2.to(self.device), label_g.to(self.device)
                     model.zero_grad()
                     classifier.zero_grad()
                     optimizer.zero_grad()
-                    protos = model(m2) # (bsz,特征维度)
-                log_probs = classifier(protos)
-                loss1 = self.criterion(log_probs, labels)
-                # print("m2", protos.shape)[8, 16, 24, 7, 1]
-                #mmact (bsz, 16, 134, 4, 1)
-                loss_mse = nn.MSELoss()
-                if len(global_protos) == 0:
-                    loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
-                else:
-                    proto_new = copy.deepcopy(protos.data)
-                    i = 0
-                    for label in labels: # （bsz，）
-                        if label.item() in global_protos.keys():
-                            proto_new[i, :] = global_protos[label.item()][1].data
-                        i += 1
-                    loss2 = loss_mse(proto_new, protos)
+                    # print(m2.shape) # torch.Size([8, 17, 2, 150])
+                    protos = model(m2.permute(0, 3, 1, 2).unsqueeze(1)) # (bsz,特征维度)
+                    log_probs = classifier(protos)
+                    loss1 = self.criterion(log_probs, labels)
+                    # print("m2", protos.shape)[8, 16, 24, 7, 1]
+                    #mmact (bsz, 16, 134, 4, 1)
+                    loss_mse = nn.MSELoss()
+                    if len(global_protos) == 0:
+                        loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                    else:
+                        proto_new = copy.deepcopy(protos.data)
+                        i = 0
+                        for label in labels: # （bsz，）
+                            if label.item() in global_protos.keys():
+                                proto_new[i, :] = global_protos[label.item()][1].data
+                            i += 1
+                        loss2 = loss_mse(proto_new, protos)
 
-                loss = loss1 + loss2 * args.ld
-                loss.backward()
-                optimizer.step()
+                    loss = loss1 + loss2 * args.ld
+                    loss.backward()
+                    optimizer.step()
 
-                for i in range(len(labels)):
-                    label = label_g[i].item()
-                    if label not in agg_protos_label:
-                        agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
+                    for i in range(len(labels)):
+                        label = label_g[i].item()
+                        if label not in agg_protos_label:
+                            agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
 
-                    agg_protos_label[label][1].append(protos[i,:])
-                log_probs = log_probs[:, 0:args.num_classes]
-                _, y_hat = log_probs.max(1)
-                acc_val = torch.eq(y_hat, labels.squeeze()).float().mean()
-                if batch_idx == len(self.trainloader) - 2:
-                    print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
-                        global_round, idx, iter, 
-                        loss.item(),
-                        acc_val.item()))
-                batch_loss['total'].append(loss.item())
-                batch_loss['1'].append(loss1.item())
-                batch_loss['2'].append(loss2.item())
+                        agg_protos_label[label][1].append(protos[i,:])
+                    log_probs = log_probs[:, 0:args.num_classes]
+                    _, y_hat = log_probs.max(1)
+                    acc_val = torch.eq(y_hat, labels.squeeze()).float().mean()
+                    if batch_idx == len(self.trainloader) - 2:
+                        print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
+                            global_round, idx, iter, 
+                            loss.item(),
+                            acc_val.item()))
+                    batch_loss['total'].append(loss.item())
+                    batch_loss['1'].append(loss1.item())
+                    batch_loss['2'].append(loss2.item())
+            else:
+                for batch_idx, (_, m2, label_g) in enumerate(self.trainloader):
+                    # print(m2['input_ids'].shape)[64,40]
+                    if args.dataset == 'UMPC':
+                        if m2['input_ids'].size(0) < 2:
+                            continue  # 跳过只有一个样本的批次
+                        input_ids, attention_mask, labels = m2['input_ids'].to(self.device), m2['attention_mask'].to(self.device), label_g.to(self.device)
+                        model.zero_grad()
+                        classifier.zero_grad()
+                        optimizer.zero_grad()
+                        protos = model(input_ids, attention_mask) # (bsz,特征维度)
+                        # print("m2", protos.shape) # [64, 512]
+                    elif args.dataset == 'UTD':
+                        if m2.size(0) < 2:
+                            continue  # 跳过只有一个样本的批次
+                        m2, labels = m2.to(self.device), label_g.to(self.device)
+                        model.zero_grad()
+                        classifier.zero_grad()
+                        optimizer.zero_grad()
+                        protos = model(m2) # (bsz,特征维度)
+                    log_probs = classifier(protos)
+                    loss1 = self.criterion(log_probs, labels)
+                    # print("m2", protos.shape)[8, 16, 24, 7, 1]
+                    #mmact (bsz, 16, 134, 4, 1)
+                    loss_mse = nn.MSELoss()
+                    if len(global_protos) == 0:
+                        loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                    else:
+                        proto_new = copy.deepcopy(protos.data)
+                        i = 0
+                        for label in labels: # （bsz，）
+                            if label.item() in global_protos.keys():
+                                proto_new[i, :] = global_protos[label.item()][1].data
+                            i += 1
+                        loss2 = loss_mse(proto_new, protos)
+
+                    loss = loss1 + loss2 * args.ld
+                    loss.backward()
+                    optimizer.step()
+
+                    for i in range(len(labels)):
+                        label = label_g[i].item()
+                        if label not in agg_protos_label:
+                            agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
+
+                        agg_protos_label[label][1].append(protos[i,:])
+                    log_probs = log_probs[:, 0:args.num_classes]
+                    _, y_hat = log_probs.max(1)
+                    acc_val = torch.eq(y_hat, labels.squeeze()).float().mean()
+                    if batch_idx == len(self.trainloader) - 2:
+                        print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
+                            global_round, idx, iter, 
+                            loss.item(),
+                            acc_val.item()))
+                    batch_loss['total'].append(loss.item())
+                    batch_loss['1'].append(loss1.item())
+                    batch_loss['2'].append(loss2.item())
             epoch_loss['total'].append(sum(batch_loss['total'])/len(batch_loss['total']))
             epoch_loss['1'].append(sum(batch_loss['1']) / len(batch_loss['1']))
             epoch_loss['2'].append(sum(batch_loss['2']) / len(batch_loss['2']))
@@ -398,77 +448,143 @@ class LocalUpdate(object):
         for iter in range(self.args.train_ep):
             batch_loss = {'total':[],'1':[], '2':[], '3':[]}
             agg_protos_label = {}
-
-            for batch_idx, (m1, m2, label_g) in enumerate(self.trainloader):
-                if m1.size(0) < 2:
-                    continue  # 跳过只有一个样本的批次
-                if args.dataset == 'UMPC':
-                    m1, input_ids, attention_mask, labels = m1.to(self.device), m2['input_ids'].to(self.device), m2['attention_mask'].to(self.device), label_g.to(self.device)
-                    model.zero_grad()
-                    classifier.zero_grad()
-                    optimizer.zero_grad()
-
-                    protos1, protos2 = model(m1, input_ids, attention_mask) # (bsz,特征维度)
-                elif args.dataset == 'UTD':
+            if args.dataset == 'MMAct':
+                for batch_idx, batch in enumerate(self.trainloader):
+                    m1 = batch['inertial']
+                    m2 = batch['skeleton']
+                    label_g = batch['label']
+                    if m1.size(0) < 2:
+                        continue  # 跳过只有一个样本的批次
                     m1, m2, labels = m1.to(self.device), m2.to(self.device), label_g.to(self.device)
                     model.zero_grad()
                     classifier.zero_grad()
                     optimizer.zero_grad()
 
-                    protos1, protos2 = model(m1, m2) # (bsz,特征维度)
-                log_probs1, log_probs2 = classifier(protos1, protos2)
-                # loss1_1 = self.criterion(log_probs1, labels)
-                # loss1_2 = self.criterion(log_probs2, labels)
-                loss1 = 1/2*self.criterion(log_probs1, labels)+1/2*self.criterion(log_probs2, labels)
-                loss_mse = nn.MSELoss()
-                if len(global_protos) == 0:
-                    loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
-                    # loss2_1 = torch.tensor(0.0, device=self.device, requires_grad=True)
-                    # loss2_2 = torch.tensor(0.0, device=self.device, requires_grad=True)
-                else:
-                    proto_new1 = copy.deepcopy(protos1.data)
-                    proto_new2 = copy.deepcopy(protos2.data)
-                    i = 0
-                    for label in labels: # （bsz，）
-                        if label.item() in global_protos.keys():
-                            proto_new1[i, :] = global_protos[label.item()][0].data
-                            proto_new2[i, :] = global_protos[label.item()][1].data
-                        i += 1
-                    loss2 = 1/2*loss_mse(proto_new1, protos1)+1/2*loss_mse(proto_new2, protos2)
-                    # loss2_1 = loss_mse(proto_new1, protos1)
-                    # loss2_2 = loss_mse(proto_new2, protos2)
-                loss = loss1 + loss2 * args.ld
-                loss.backward()
-                optimizer.step()
-                # loss_1 = loss1_1#+loss2_1*args.ld
-                # loss_2 = loss1_2#+loss2_2*args.ld
-                # loss_1.backward()
-                # optimizer_modality_1.step()
-                # loss_2.backward()
-                # optimizer_modality_2.step()
+                    protos1, protos2 = model(m1.unsqueeze(1), m2.permute(0, 3, 1, 2).unsqueeze(1)) # (bsz,特征维度)
+                    log_probs1, log_probs2 = classifier(protos1, protos2)
+                    # loss1_1 = self.criterion(log_probs1, labels)
+                    # loss1_2 = self.criterion(log_probs2, labels)
+                    loss1 = 1/2*self.criterion(log_probs1, labels)+1/2*self.criterion(log_probs2, labels)
+                    loss_mse = nn.MSELoss()
+                    if len(global_protos) == 0:
+                        loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                        # loss2_1 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                        # loss2_2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                    else:
+                        proto_new1 = copy.deepcopy(protos1.data)
+                        proto_new2 = copy.deepcopy(protos2.data)
+                        i = 0
+                        for label in labels: # （bsz，）
+                            if label.item() in global_protos.keys():
+                                proto_new1[i, :] = global_protos[label.item()][0].data
+                                proto_new2[i, :] = global_protos[label.item()][1].data
+                            i += 1
+                        loss2 = 1/2*loss_mse(proto_new1, protos1)+1/2*loss_mse(proto_new2, protos2)
+                        # loss2_1 = loss_mse(proto_new1, protos1)
+                        # loss2_2 = loss_mse(proto_new2, protos2)
+                    loss = loss1 + loss2 * args.ld
+                    loss.backward()
+                    optimizer.step()
+                    # loss_1 = loss1_1#+loss2_1*args.ld
+                    # loss_2 = loss1_2#+loss2_2*args.ld
+                    # loss_1.backward()
+                    # optimizer_modality_1.step()
+                    # loss_2.backward()
+                    # optimizer_modality_2.step()
 
-                for i in range(len(labels)):
-                    label = label_g[i].item()
-                    if label not in agg_protos_label:
-                        agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
+                    for i in range(len(labels)):
+                        label = label_g[i].item()
+                        if label not in agg_protos_label:
+                            agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
 
-                    agg_protos_label[label][0].append(protos1[i,:])
-                    agg_protos_label[label][1].append(protos2[i,:])
+                        agg_protos_label[label][0].append(protos1[i,:])
+                        agg_protos_label[label][1].append(protos2[i,:])
 
-                log_probs1 = log_probs1[:, 0:args.num_classes]
-                _, y_hat1 = log_probs1.max(1)
-                log_probs2 = log_probs2[:, 0:args.num_classes]
-                _, y_hat2 = log_probs2.max(1)
-                acc_val = (torch.eq(y_hat1, labels.squeeze()).float().mean()+torch.eq(y_hat2, labels.squeeze()).float().mean())/2
+                    log_probs1 = log_probs1[:, 0:args.num_classes]
+                    _, y_hat1 = log_probs1.max(1)
+                    log_probs2 = log_probs2[:, 0:args.num_classes]
+                    _, y_hat2 = log_probs2.max(1)
+                    acc_val = (torch.eq(y_hat1, labels.squeeze()).float().mean()+torch.eq(y_hat2, labels.squeeze()).float().mean())/2
 
-                if batch_idx == len(self.trainloader) - 2:
-                    print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
-                        global_round, idx, iter, 
-                        loss.item(),
-                        acc_val.item()))
-                batch_loss['total'].append(loss.item())
-                batch_loss['1'].append(loss1.item())
-                batch_loss['2'].append(loss2.item())
+                    if batch_idx == len(self.trainloader) - 2:
+                        print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
+                            global_round, idx, iter, 
+                            loss.item(),
+                            acc_val.item()))
+                    batch_loss['total'].append(loss.item())
+                    batch_loss['1'].append(loss1.item())
+                    batch_loss['2'].append(loss2.item())
+            else:
+                for batch_idx, (m1, m2, label_g) in enumerate(self.trainloader):
+                    if m1.size(0) < 2:
+                        continue  # 跳过只有一个样本的批次
+                    if args.dataset == 'UMPC':
+                        m1, input_ids, attention_mask, labels = m1.to(self.device), m2['input_ids'].to(self.device), m2['attention_mask'].to(self.device), label_g.to(self.device)
+                        model.zero_grad()
+                        classifier.zero_grad()
+                        optimizer.zero_grad()
+
+                        protos1, protos2 = model(m1, input_ids, attention_mask) # (bsz,特征维度)
+                    elif args.dataset == 'UTD':
+                        m1, m2, labels = m1.to(self.device), m2.to(self.device), label_g.to(self.device)
+                        model.zero_grad()
+                        classifier.zero_grad()
+                        optimizer.zero_grad()
+
+                        protos1, protos2 = model(m1, m2) # (bsz,特征维度)
+                    log_probs1, log_probs2 = classifier(protos1, protos2)
+                    # loss1_1 = self.criterion(log_probs1, labels)
+                    # loss1_2 = self.criterion(log_probs2, labels)
+                    loss1 = 1/2*self.criterion(log_probs1, labels)+1/2*self.criterion(log_probs2, labels)
+                    loss_mse = nn.MSELoss()
+                    if len(global_protos) == 0:
+                        loss2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                        # loss2_1 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                        # loss2_2 = torch.tensor(0.0, device=self.device, requires_grad=True)
+                    else:
+                        proto_new1 = copy.deepcopy(protos1.data)
+                        proto_new2 = copy.deepcopy(protos2.data)
+                        i = 0
+                        for label in labels: # （bsz，）
+                            if label.item() in global_protos.keys():
+                                proto_new1[i, :] = global_protos[label.item()][0].data
+                                proto_new2[i, :] = global_protos[label.item()][1].data
+                            i += 1
+                        loss2 = 1/2*loss_mse(proto_new1, protos1)+1/2*loss_mse(proto_new2, protos2)
+                        # loss2_1 = loss_mse(proto_new1, protos1)
+                        # loss2_2 = loss_mse(proto_new2, protos2)
+                    loss = loss1 + loss2 * args.ld
+                    loss.backward()
+                    optimizer.step()
+                    # loss_1 = loss1_1#+loss2_1*args.ld
+                    # loss_2 = loss1_2#+loss2_2*args.ld
+                    # loss_1.backward()
+                    # optimizer_modality_1.step()
+                    # loss_2.backward()
+                    # optimizer_modality_2.step()
+
+                    for i in range(len(labels)):
+                        label = label_g[i].item()
+                        if label not in agg_protos_label:
+                            agg_protos_label[label] = [[], []]  # 为每个标签初始化两个空列表
+
+                        agg_protos_label[label][0].append(protos1[i,:])
+                        agg_protos_label[label][1].append(protos2[i,:])
+
+                    log_probs1 = log_probs1[:, 0:args.num_classes]
+                    _, y_hat1 = log_probs1.max(1)
+                    log_probs2 = log_probs2[:, 0:args.num_classes]
+                    _, y_hat2 = log_probs2.max(1)
+                    acc_val = (torch.eq(y_hat1, labels.squeeze()).float().mean()+torch.eq(y_hat2, labels.squeeze()).float().mean())/2
+
+                    if batch_idx == len(self.trainloader) - 2:
+                        print('| Global Round : {} | User: {} | Local Epoch : {} | Loss: {:.3f} | Acc: {:.3f}'.format(
+                            global_round, idx, iter, 
+                            loss.item(),
+                            acc_val.item()))
+                    batch_loss['total'].append(loss.item())
+                    batch_loss['1'].append(loss1.item())
+                    batch_loss['2'].append(loss2.item())
             epoch_loss['total'].append(sum(batch_loss['total'])/len(batch_loss['total']))
             epoch_loss['1'].append(sum(batch_loss['1']) / len(batch_loss['1']))
             epoch_loss['2'].append(sum(batch_loss['2']) / len(batch_loss['2']))
@@ -1776,7 +1892,12 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
                 continue
             m, labels = m.to(device), labels.to(device)
             model.zero_grad()
-            protos = model(m)
+            if args.dataset == 'MMAct' and mdl == 1:
+                protos = model(m.unsqueeze(1))
+            elif args.dataset == 'MMAct' and mdl == 2:
+                protos = model(m.permute(0,3,1,2).unsqueeze(1))
+            else:
+                protos = model(m.unsqueeze(1))
             if not visualize_done:  # 如果函数还没有执行过
                 # visualize_prototypes_with_tsne(global_protos, protos, labels, save_img=True, img_path="./img_sne/")
                 visualize_done = True  # 改变标志的值
@@ -1813,42 +1934,83 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
         model.eval()
         correct, total, acc_list, loss_list = 0.0, 0.0, [], []
         visualize_done = False  # 设置一个标志
-        for (m1, m2, labels) in dataloader:
-            if m1.size(0) < 2:
-                continue
-            m1, m2, labels = m1.to(device), m2.to(device), labels.to(device)
-            model.zero_grad()
-            protos1, protos2 = model(m1, m2)
-            if not visualize_done:  # 如果函数还没有执行过
-                # visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
-                # visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
-                visualize_done = True  # 改变标志的值
-            a_large_num = 100
-            dist = a_large_num * torch.ones(size=(m1.shape[0], args.num_classes)).to(device)
-            for i in range(m1.shape[0]):
-                for j in range(args.num_classes):
-                    if j in global_protos.keys():
-                        d = 0.5 * loss_mse(protos1[i, :], global_protos[j][0]) + 0.5 * loss_mse(protos2[i, :], global_protos[j][1])
-                        dist[i, j] = d
+        if args.dataset == 'MMAct':
+            for batch_idx, batch in enumerate(dataloader):
+                m1 = batch['inertial']
+                m2 = batch['skeleton']
+                label_g = batch['label']
+                if m1.size(0) < 2:
+                    continue  # 跳过只有一个样本的批次
+                m1, m2, labels = m1.to(device), m2.to(device), labels.to(device)
+                model.zero_grad()
+                protos1, protos2 = model(m1, m2)
+                if not visualize_done:  # 如果函数还没有执行过
+                    # visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
+                    # visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
+                    visualize_done = True  # 改变标志的值
+                a_large_num = 100
+                dist = a_large_num * torch.ones(size=(m1.shape[0], args.num_classes)).to(device)
+                for i in range(m1.shape[0]):
+                    for j in range(args.num_classes):
+                        if j in global_protos.keys():
+                            d = 0.5 * loss_mse(protos1[i, :], global_protos[j][0]) + 0.5 * loss_mse(protos2[i, :], global_protos[j][1])
+                            dist[i, j] = d
 
-            _, pred_labels = torch.min(dist, 1)
-            pred_labels = pred_labels.view(-1)
-            correct += torch.sum(torch.eq(pred_labels, labels)).item()
-            total += len(labels) 
+                _, pred_labels = torch.min(dist, 1)
+                pred_labels = pred_labels.view(-1)
+                correct += torch.sum(torch.eq(pred_labels, labels)).item()
+                total += len(labels) 
 
-            proto_new1 = copy.deepcopy(protos1.data)
-            proto_new2 = copy.deepcopy(protos2.data)
-            for i, label in enumerate(labels):
-                if label.item() in global_protos.keys():
-                    proto_new1[i, :] = global_protos[label.item()][0].data
-                    proto_new2[i, :] = global_protos[label.item()][1].data
+                proto_new1 = copy.deepcopy(protos1.data)
+                proto_new2 = copy.deepcopy(protos2.data)
+                for i, label in enumerate(labels):
+                    if label.item() in global_protos.keys():
+                        proto_new1[i, :] = global_protos[label.item()][0].data
+                        proto_new2[i, :] = global_protos[label.item()][1].data
 
-            loss2 = 0.5 * loss_mse(proto_new1, protos1) + 0.5 * loss_mse(proto_new2, protos2)
-            if args.device == 'cuda':
-                loss2 = loss2.cpu().detach().numpy()
-            else:
-                loss2 = loss2.detach().numpy()
-            loss_list.append(loss2)
+                loss2 = 0.5 * loss_mse(proto_new1, protos1) + 0.5 * loss_mse(proto_new2, protos2)
+                if args.device == 'cuda':
+                    loss2 = loss2.cpu().detach().numpy()
+                else:
+                    loss2 = loss2.detach().numpy()
+                loss_list.append(loss2)
+        else:
+            for (m1, m2, labels) in dataloader:
+                if m1.size(0) < 2:
+                    continue
+                m1, m2, labels = m1.to(device), m2.to(device), labels.to(device)
+                model.zero_grad()
+                protos1, protos2 = model(m1, m2)
+                if not visualize_done:  # 如果函数还没有执行过
+                    # visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
+                    # visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
+                    visualize_done = True  # 改变标志的值
+                a_large_num = 100
+                dist = a_large_num * torch.ones(size=(m1.shape[0], args.num_classes)).to(device)
+                for i in range(m1.shape[0]):
+                    for j in range(args.num_classes):
+                        if j in global_protos.keys():
+                            d = 0.5 * loss_mse(protos1[i, :], global_protos[j][0]) + 0.5 * loss_mse(protos2[i, :], global_protos[j][1])
+                            dist[i, j] = d
+
+                _, pred_labels = torch.min(dist, 1)
+                pred_labels = pred_labels.view(-1)
+                correct += torch.sum(torch.eq(pred_labels, labels)).item()
+                total += len(labels) 
+
+                proto_new1 = copy.deepcopy(protos1.data)
+                proto_new2 = copy.deepcopy(protos2.data)
+                for i, label in enumerate(labels):
+                    if label.item() in global_protos.keys():
+                        proto_new1[i, :] = global_protos[label.item()][0].data
+                        proto_new2[i, :] = global_protos[label.item()][1].data
+
+                loss2 = 0.5 * loss_mse(proto_new1, protos1) + 0.5 * loss_mse(proto_new2, protos2)
+                if args.device == 'cuda':
+                    loss2 = loss2.cpu().detach().numpy()
+                else:
+                    loss2 = loss2.detach().numpy()
+                loss_list.append(loss2)
 
         acc = correct / total
         acc_list.append(acc)
@@ -2115,9 +2277,11 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
     # 聚合 classifier_1_global 的权重
     if args.dataset == 'UTD':
         classifier_1_indices = [0, 1, 4]
+        classifier_list_1 = [local_classifier_list[i].state_dict() if i < 2 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
     elif args.dataset == 'MMAct':
         classifier_1_indices = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19]
-    classifier_list_1 = [local_classifier_list[i].state_dict() if i < 2 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
+        classifier_list_1 = [local_classifier_list[i].state_dict() if i < 8 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
+    
     c1_data_sizes = [client_data_sizes[i] for i in classifier_1_indices]
     total_c1_data_size = sum(c1_data_sizes)
     c1_weights = [size / total_c1_data_size for size in c1_data_sizes]
@@ -2127,9 +2291,11 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
     # 聚合 classifier_2_global 的权重
     if args.dataset == 'UTD':
         classifier_2_indices = [2, 3, 4]
+        classifier_list_2 = [local_classifier_list[i].state_dict() if i < 4 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
     elif args.dataset == 'MMAct':
         classifier_2_indices = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-    classifier_list_2 = [local_classifier_list[i].state_dict() if i < 4 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
+        classifier_list_2 = [local_classifier_list[i].state_dict() if i < 16 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
+    
     c2_data_sizes = [client_data_sizes[i] for i in classifier_2_indices]
     total_c2_data_size = sum(c2_data_sizes)
     c2_weights = [size / total_c2_data_size for size in c2_data_sizes]

@@ -623,6 +623,19 @@ def get_dataset(args, n_list, k_list):
         # val_dataloader = data_module.val_dataloader()
         test_dataloader = data_module.test_dataloader()
 
+        # def count_unique_labels(data_loader):
+        #     unique_labels = set()
+        #     for batch in data_loader:
+        #         labels = batch['label']
+        #         unique_labels.update(labels.tolist())  # 将标签添加到集合中
+        #     return len(unique_labels), unique_labels
+        # # 统计训练集和测试集中的唯一标签数量
+        # num_train_labels, train_labels = count_unique_labels(train_dataloader)
+        # num_test_labels, test_labels = count_unique_labels(test_dataloader)
+
+        # print(f"训练集共有 {num_train_labels} 类标签: {train_labels}") # 35(无24和37)
+        # print(f"测试集共有 {num_test_labels} 类标签: {test_labels}")
+
         # # 打印每个批次的形状信息
         # def check_shapes(dataloader, name):
         #     for batch in dataloader:

@@ -243,6 +243,7 @@ class cnn_layers_2(nn.Module):
         )
 
     def forward(self, x):
+        x = x.float()  # 将输入数据转换为float类型
         x = self.features(x)
         return x
 # 因为mmact是17个骨骼点xy二维数据
