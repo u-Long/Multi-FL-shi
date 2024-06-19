@@ -507,20 +507,19 @@ def get_dataset(args, n_list, k_list):
             print_client_dataset_classes(user_dataloaders)
     
     elif args.dataset == 'UMPC':
-        # 加载IID分布的客户端数据集
-        client_datasets_iid = torch.load('../client_datasets_iid.pt')
-        # 加载Non-IID分布的客户端数据集
-        client_datasets_noniid = torch.load('../client_datasets_noniid_0.5.pt')
-        # 打印数据集中的一些信息以确认加载正确
-        print("Number of client datasets (IID):", len(client_datasets_iid))
-        print("Number of samples in first client dataset (IID):", len(client_datasets_iid[0]))
-
-        print("Number of client datasets (Non-IID):", len(client_datasets_noniid))
-        print("Number of samples in first client dataset (Non-IID):", len(client_datasets_noniid[0]))
         if args.iid:
+            # 加载IID分布的客户端数据集
+            client_datasets_iid = torch.load('data/food/client_datasets_iid.pt')
+            # 打印数据集中的一些信息以确认加载正确
+            print("Number of client datasets (IID):", len(client_datasets_iid))
+            print("Number of samples in first client dataset (IID):", len(client_datasets_iid[0]))
             # 为IID数据集创建DataLoader
             user_dataloaders = [DataLoader(dataset, batch_size=32, num_workers=16, shuffle=True) for dataset in client_datasets_iid]
         else:
+            # 加载Non-IID分布的客户端数据集
+            client_datasets_noniid = torch.load('data/food/client_datasets_noniid_0.5.pt')
+            print("Number of client datasets (Non-IID):", len(client_datasets_noniid))
+            print("Number of samples in first client dataset (Non-IID):", len(client_datasets_noniid[0]))
             # 为Non-IID数据集创建DataLoader
             user_dataloaders = [DataLoader(dataset, batch_size=32, num_workers=16, shuffle=True) for dataset in client_datasets_noniid]
         tf = transforms.Compose([transforms.Resize((224,224)),
@@ -528,8 +527,8 @@ def get_dataset(args, n_list, k_list):
                                 transforms.ToTensor(),
                                 transforms.Normalize([0.485, 0.456, 0.406],
                                                     [0.229, 0.224, 0.225])])
-        Train_set=UMPC_FoodDataset(targ_dir="../data/food" ,phase="train", mode="all",transform=tf)
-        Test_set=UMPC_FoodDataset(targ_dir="../data/food" ,phase="test", mode="all",transform=tf)
+        Train_set=UMPC_FoodDataset(targ_dir="./data/food" ,phase="train", mode="all",transform=tf)
+        Test_set=UMPC_FoodDataset(targ_dir="./data/food" ,phase="test", mode="all",transform=tf)
         train_dataloader = DataLoader(Train_set, batch_size=32, shuffle=False,num_workers=16)
         test_dataloader = DataLoader(Test_set, batch_size=32, shuffle=False,num_workers=16)  
         # 创建一个空的 TensorDataset
@@ -538,6 +537,26 @@ def get_dataset(args, n_list, k_list):
         # 使用空的 TensorDataset 创建 DataLoader
         global_dataloader = DataLoader(empty_dataset, batch_size=1)
         pass
+        # train_dataset_single_modality_1 = [(sample[0], sample[3]) for sample in Train_set]
+        # test_dataset_single_modality_1 = [(sample[0], sample[3]) for sample in Test_set]
+        # test_dataset_single_modality_2 = [(sample[1], sample[3]) for sample in Test_set]
+        # 添加噪声函数
+        def add_noise(data, noise_level=0.5):
+            data_std = np.std(data)
+            noise = np.random.normal(0, noise_level * data_std, data.shape)
+            noisy_data = data + noise
+            return noisy_data
+        test_noisy_single_modality_data_1 = [(torch.tensor(add_noise(sample[0], noise_level)), sample[3]) for sample in test_dataset]
+        # 文本加噪太复杂了，不加了。
+        print('here')
+        test_dataset_noisy_multi_modality = [(torch.tensor(add_noise(sample[0], noise_level)), sample[1], sample[3]) for sample in test_dataset]
+        train_dataloader_single_modality_1 = DataLoader(empty_dataset, batch_size=32, shuffle=False, num_workers=16)
+        test_dataloader_single_modality_1 = DataLoader(empty_dataset, batch_size=32, shuffle=False, num_workers=16)
+        test_dataloader_single_modality_2 = DataLoader(empty_dataset, batch_size=32, shuffle=False, num_workers=16)
+        test_dataloader_multi_modality = test_dataloader
+        test_dataloader_noisy_single_modality_1 = DataLoader(test_noisy_single_modality_data_1, batch_size=32, shuffle=False, num_workers=16)
+        test_dataloader_noisy_multi_modality = DataLoader(test_dataset_noisy_multi_modality, batch_size=32, shuffle=False, num_workers=16)
+        
         # tf = transforms.Compose([transforms.Resize((224,224)),
         #                         # transforms.CenterCrop(resize),
         #                         transforms.ToTensor(),

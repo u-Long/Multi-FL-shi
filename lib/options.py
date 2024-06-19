@@ -49,6 +49,8 @@ def args_parser():
     parser.add_argument('--data_dir', type=str, default='../data/', help="directory of dataset")
     parser.add_argument('--dataset', type=str, default='UTD', help="name \
                         of dataset")
+    # python federated_main.py --dataset MMAct --num_classes 37 --num_users 20
+    # 
     parser.add_argument('--num_classes', type=int, default=27, help="number \
                         of classes")
     parser.add_argument('--gpu', default=0, help="To use cuda, set \

@@ -693,6 +693,7 @@ if __name__ == '__main__':
                 local_classifier.classifier_modality_1.load_state_dict(classifier_uni.state_dict())
                 local_classifier.classifier_modality_2.load_state_dict(classifier_uni.state_dict())
         elif args.dataset == 'UMPC':
+
             if i<8:
                 local_model = ImageFeature()
                 local_classifier = FeatureClassifier(args)

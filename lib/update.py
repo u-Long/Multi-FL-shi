@@ -1938,12 +1938,12 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
             for batch_idx, batch in enumerate(dataloader):
                 m1 = batch['inertial']
                 m2 = batch['skeleton']
-                label_g = batch['label']
+                labels = batch['label']
                 if m1.size(0) < 2:
                     continue  # 跳过只有一个样本的批次
                 m1, m2, labels = m1.to(device), m2.to(device), labels.to(device)
                 model.zero_grad()
-                protos1, protos2 = model(m1, m2)
+                protos1, protos2 = model(m1.unsqueeze(1), m2.permute(0,3,1,2).unsqueeze(1))
                 if not visualize_done:  # 如果函数还没有执行过
                     # visualize_prototypes_with_tsne(global_protos, protos1, labels, save_img=True, img_path="./img_sne/")
                     # visualize_prototypes_with_tsne(global_protos, protos2, labels, save_img=True, img_path="./img_sne/")
