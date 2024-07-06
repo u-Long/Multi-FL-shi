@@ -150,6 +150,33 @@ def utd_iid(args, dataset, num_users, first_modality_users, second_modality_user
         user_dataloaders[user_idx] = user_dataloader
     return user_dataloaders
 
+def utd_iid_76(args, dataset, users, flag):
+    """
+    Sample IID user data from UTD dataset, allowing for single modality for some users.
+    :param dataset: Complete dataset with two modalities.
+    :param num_users: Total number of users.
+    :param single_modality_users: List of users that should receive only one modality.
+    :return: Dictionary of user data indices.
+    """
+    num_items =  int(len(dataset) / 5) # int(len(dataset)*0.8)
+    user_groups = {}
+    user_dataloaders = {}
+    all_indices = list(range(len(dataset)))
+    for i in users:
+        indices = np.random.choice(all_indices, num_items, replace=False)
+        all_indices = list(set(all_indices) - set(indices))
+        if flag == 1:
+            user_groups[i] = [(dataset[idx][0], None, dataset[idx][2]) for idx in indices]
+        else:
+            user_groups[i] = [(None, dataset[idx][1], dataset[idx][2]) for idx in indices]
+    
+    for user_idx, user_data in user_groups.items():
+        user_dataset = CustomDataset(user_data)
+        user_dataloader = torch.utils.data.DataLoader(
+            user_dataset, batch_size=args.batch_size,
+            num_workers=args.num_workers, pin_memory=True, shuffle=True)
+        user_dataloaders[user_idx] = user_dataloader
+    return user_dataloaders
 
 def global_test(args, dataset):
     test_dataset = CustomDataset(dataset)
@@ -298,18 +325,19 @@ def get_dataset(args, n_list, k_list):
         # load data (already normalized)
         num_of_train = (1 * (args.num_train_basic) * np.ones(args.num_classes)).astype(int)
         num_of_test = (1*(args.num_test_basic) * np.ones(args.num_classes)).astype(int)
-        # num_of_global = (1 * (16) * np.ones(args.num_classes)).astype(int)
+        num_of_global = (1 * (args.num_unlabel_basic) * np.ones(args.num_classes)).astype(int) #就是unlabel
+
         #load labeled train and test data
         print("train labeled data:")
         x_train_label_1, x_train_label_2, y_train = load_data(args.num_classes, num_of_train, 3, args.label_rate, args)
         print("test data:")
         x_test_1, x_test_2, y_test = load_data(args.num_classes, num_of_test, 2, args.label_rate, args)
-        # print("global data:")
-        # x_global_1, x_global_2, y_global = load_data(args.num_classes, num_of_global, 4, args.label_rate)
+        print("unlabeled data:")
+        x_global_1, x_global_2, y_global = load_data(args.num_classes, num_of_global, 4, args.label_rate, args)
 
         train_dataset = Multimodal_dataset(x_train_label_1, x_train_label_2, y_train)
         test_dataset = Multimodal_dataset(x_test_1, x_test_2, y_test)
-        # global_dataset = Multimodal_dataset(x_global_1, x_global_2, y_global)
+        global_dataset = Multimodal_dataset(x_global_1, x_global_2, y_global)
         train_dataset_single_modality_1 = SingleModalityDataset(x_train_label_1, y_train)
         train_dataloader_single_modality_1 = torch.utils.data.DataLoader(
             train_dataset_single_modality_1, batch_size=args.batch_size,
@@ -388,13 +416,18 @@ def get_dataset(args, n_list, k_list):
 
 
         # Define which users should get only one modality
-        first_modality_users = list(range(2))  
-        second_modality_users = list(range(2, 4))
-
+        # first_modality_users = list(range(2))  
+        # second_modality_users = list(range(2, 4))
+        first_modality_users = list(range(5))  
+        second_modality_users = list(range(5, 10))
         # Sample training data amongst users
         if args.iid:
-            extracted_train_data = extract_data_from_dataloader(train_dataloader)
-            user_dataloaders = utd_iid(args, extracted_train_data, args.num_users, first_modality_users, second_modality_users)
+            # extracted_train_data = extract_data_from_dataloader(train_dataloader)
+            # user_dataloaders = utd_iid(args, extracted_train_data, args.num_users, first_modality_users, second_modality_users)
+            user_dataloader1 = utd_iid_76(args, train_dataset, first_modality_users, 1)
+            user_dataloader2 = utd_iid_76(args, train_dataset, second_modality_users, 2)
+            user_dataloaders = {**user_dataloader1, **user_dataloader2}
+
         else:
             # class CusDataset(Dataset):
             #     def __init__(self, data):
@@ -472,7 +505,7 @@ def get_dataset(args, n_list, k_list):
                 for user_idx, data_indices in enumerate(user_data_indices_group2):
                     user_dataset = CusDataset(data_indices, 2)
                     user_dataloader = DataLoader(user_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-                    user_dataloaders[user_idx+2] = user_dataloader
+                    user_dataloaders[user_idx+5] = user_dataloader #
                 return user_dataloaders
 
             def allocate_data_for_multimodal_client(dataset, multimodal_client_share=0.2):
@@ -498,10 +531,10 @@ def get_dataset(args, n_list, k_list):
 
             multimodal_dataset, remaining_dataset = allocate_data_for_multimodal_client(train_dataset)
             user_dataloaders = {}
-            multimodal_dataloader = DataLoader(CusDataset(multimodal_dataset, 3), batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+            # multimodal_dataloader = DataLoader(CusDataset(multimodal_dataset, 3), batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
             
-            user_dataloaders = create_non_iid_modal_dataloaders(remaining_dataset, 2, 2, 2)
-            user_dataloaders[4] = multimodal_dataloader
+            user_dataloaders = create_non_iid_modal_dataloaders(train_dataset, 5, 5, 2)
+            # user_dataloaders[4] = multimodal_dataloader
 
             # 调用函数打印每个客户端的数据集类别
             print_client_dataset_classes(user_dataloaders)
@@ -546,10 +579,10 @@ def get_dataset(args, n_list, k_list):
             noise = np.random.normal(0, noise_level * data_std, data.shape)
             noisy_data = data + noise
             return noisy_data
-        test_noisy_single_modality_data_1 = [(torch.tensor(add_noise(sample[0], noise_level)), sample[3]) for sample in test_dataset]
+        test_noisy_single_modality_data_1 = [(torch.tensor(add_noise(sample[0], noise_level)), sample[3]) for sample in Test_set]
         # 文本加噪太复杂了，不加了。
         print('here')
-        test_dataset_noisy_multi_modality = [(torch.tensor(add_noise(sample[0], noise_level)), sample[1], sample[3]) for sample in test_dataset]
+        test_dataset_noisy_multi_modality = [(torch.tensor(add_noise(sample[0], noise_level)), sample[1], sample[3]) for sample in Test_set]
         train_dataloader_single_modality_1 = DataLoader(empty_dataset, batch_size=32, shuffle=False, num_workers=16)
         test_dataloader_single_modality_1 = DataLoader(empty_dataset, batch_size=32, shuffle=False, num_workers=16)
         test_dataloader_single_modality_2 = DataLoader(empty_dataset, batch_size=32, shuffle=False, num_workers=16)

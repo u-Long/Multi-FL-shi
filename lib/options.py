@@ -78,8 +78,9 @@ def args_parser():
     parser.add_argument('--ft_round', type=int, default=10, help="round of fine tuning")
 
     # new
-    parser.add_argument('--num_train_basic', type=int, default=20, help='num_test_basic')
-    parser.add_argument('--num_test_basic', type=int, default=12, help='num_test_basic') #UTD-32
+    parser.add_argument('--num_train_basic', type=int, default=16, help='num_test_basic')
+    parser.add_argument('--num_test_basic', type=int, default=8, help='num_test_basic') #UTD-32
+    parser.add_argument('--num_unlabel_basic', type=int, default=8, help='num_unlabel_basic')
     parser.add_argument('--label_rate', type=int, default=5, help='label_rate')
     parser.add_argument('--batch_size', type=int, default=8, help='batch_size')
     parser.add_argument('--num_workers', type=int, default=16, help='num of workers to use')

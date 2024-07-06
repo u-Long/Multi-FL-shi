@@ -208,7 +208,7 @@ def load_class_data_single(sensor_str, activity_class, train_test_flag, label_ra
 
 	elif train_test_flag == 2:#test
 
-		for subject_id in range(int(args.num_train_basic/4), 8):
+		for subject_id in range(int(args.num_train_basic/4), 6): # 8
 
 			for test_id in range(4):
 
@@ -239,7 +239,7 @@ def load_class_data_single(sensor_str, activity_class, train_test_flag, label_ra
 
 	elif train_test_flag == 4:#train global
 
-		for subject_id in range(3, 7):
+		for subject_id in range(6, 8):
 
 			for test_id in range(4):
 
@@ -249,7 +249,7 @@ def load_class_data_single(sensor_str, activity_class, train_test_flag, label_ra
 				if temp_file == 'a8_s1_t4' or temp_file == 'a23_s6_t4' or temp_file == 'a27_s8_t4':
 					print("No such file:", temp_file)
 				elif (temp_file in label_file_name) == False:
-					data_sample = np.load('../data/UTD-data/split-6-2/train/label-27-5-percent/unlabel/' + sensor_str + '/' + temp_file + '_' + sensor_str + '.npy')
+					data_sample = np.load('./data/UTD-data/split-6-2/train/label-27-5-percent/unlabel/' + sensor_str + '/' + temp_file + '_' + sensor_str + '.npy')
 					data_all_subject.extend(data_sample)
 					# print(temp_file)
 

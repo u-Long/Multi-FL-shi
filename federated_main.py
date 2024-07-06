@@ -80,7 +80,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
         
         for idx in idxs_users:
             local_model = LocalUpdate(args=args, dataset=train_dataset, idxs=user_groups[idx])
-            if args.dataset == 'UMPC' or 'MMAct':
+            if args.dataset == 'UMPC' or args.dataset == 'MMAct':
                 if idx<8:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m1(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 elif idx>=8 and idx<16:
@@ -88,9 +88,9 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
                 else:
                     w, w1, loss, acc, protos = local_model.update_weights_het_mm(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
             elif args.dataset == 'UTD':
-                if idx<2:
+                if idx<5:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m1(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
-                elif idx>=2 and idx<4:
+                elif idx>=5 and idx<11:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 else:
                     w, w1, loss, acc, protos = local_model.update_weights_het_mm(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
@@ -128,7 +128,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
 
 
         # 啊哈，我来加一个模型聚合(utd)
-        local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
+        local_model_list, local_classifier_list, local_model, local_classifier = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
         
 
         # print(global_protos)
@@ -142,16 +142,16 @@ def FedProto_taskheter(args, train_dataset, test_dataset1, test_noisy_1, test_da
     #         print(f"  Modality {i}: {proto}")
     # visualize_prototypes_with_tsne(global_protos, save_img=True, img_path='./tsne_visualization.png')
     
-    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, testdataset12, global_protos)
+    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, testdataset12, global_protos, local_model)
     # print("Test with proto on modality1, acc is {:.5f}".format(np.array(acc_list_g1)))
     # print("Test with proto on modality2, acc is {:.5f}".format(np.array(acc_list_g2)))
     # print("Test with proto on modality12, acc is {:.5f}, loss is {:.5f}".format(np.array(acc_list_g12), np.array(loss_list12).mean()))
     # print('For all users (with protos), mean of test acc is {:.5f}, std of test acc is {:.5f}'.format(np.mean(acc_list_g),np.std(acc_list_g)))
     # print('For all users (with protos), mean of proto loss is {:.5f}, std of loss acc is {:.5f}'.format(np.mean(loss_list), np.std(loss_list)))
     # 假设您的模型列表是local_model_list，您可以像这样保存它们的参数
-    log_file = "model_parameters_1_1.log"
-    for i, model in enumerate(local_model_list):
-        save_model_parameters_to_log(model, f"Model_{i}", log_file)
+    # log_file = "model_parameters_1_1.log"
+    # for i, model in enumerate(local_model_list):
+    #     save_model_parameters_to_log(model, f"Model_{i}", log_file)
     # test_unimodal(args, local_model_list, test_noisy_1, local_classifier_list)
     return global_protos, local_model_list, local_classifier_list
     # save protos
@@ -174,16 +174,16 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
         for idx in idxs_users:
             local_model = LocalUpdate(args=args, dataset=train_dataset, idxs=user_groups[idx])
             if args.dataset == 'UTD':
-                if idx<2:
+                if idx<5:
                     w, loss, protos, features = local_model.update_weights_het_m1_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
-                elif idx>=2 and idx<4:
+                elif idx>=5 and idx<11:
                     w, loss, protos, features = local_model.update_weights_het_m2_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
                 else:
                     w, loss, protos, features = local_model.update_weights_het_mm_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
-            elif args.dataset == 'UMPC' or 'MMAct':
-                if idx<8:
+            elif args.dataset == 'UMPC' or args.dataset == 'MMAct':
+                if idx<5:
                     w, loss, protos, features = local_model.update_weights_het_m1_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
-                elif idx>=8 and idx<16:
+                elif idx>=5 and idx<11:
                     w, loss, protos, features = local_model.update_weights_het_m2_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
                 else:
                     w, loss, protos, features = local_model.update_weights_het_mm_2(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), global_round=round)
@@ -207,7 +207,7 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
             local_model_list[idx] = local_model
 
         # 啊哈，我来加一个模型聚合(utd)
-        local_model_list, local_classifier_list = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
+        local_model_list, local_classifier_list, local_model, local_classifier = aggregate_global_models(local_model_list, local_classifier_list, user_groups, args)
         # update global weights
         global_protos = proto_aggregation(local_protos) # 汇总取平均
         global_features = proto_aggregation(local_features) 
@@ -221,15 +221,15 @@ def FedProto_taskheter2(args, train_dataset, test_dataset1, test_dataset2, test_
     #     for i, proto in enumerate(protos, start=1):
     #         print(f"  Modality {i}: {proto}")
     # visualize_prototypes_with_tsne(global_protos, save_img=True, img_path='./tsne_visualization_2.png')
-    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, test_dataset12, global_protos)
+    acc_list_g1, acc_list_g2, acc_list_g12, loss_list12 = test_proto(args, local_model_list, test_dataset1, test_dataset2, test_dataset12, global_protos, local_model) # local_model就是聚合的多模态model
     # print("Test with proto on modality1, acc is {:.5f}".format(np.array(acc_list_g1)))
     # print("Test with proto on modality2, acc is {:.5f}".format(np.array(acc_list_g2)))
     # print("Test with proto on modality12, acc is {:.5f}, loss is {:.5f}".format(np.array(acc_list_g12), np.array(loss_list12).mean()))
 
     # 假设您的模型列表是local_model_list，您可以像这样保存它们的参数
-    log_file = "model_parameters_2_1.log"
-    for i, model in enumerate(local_model_list):
-        save_model_parameters_to_log(model, f"Model_{i}", log_file)
+    # log_file = "model_parameters_2_1.log"
+    # for i, model in enumerate(local_model_list):
+    #     save_model_parameters_to_log(model, f"Model_{i}", log_file)
 
     # save protos
     # if args.dataset == 'mnist':
@@ -252,13 +252,13 @@ def FedProto_taskheter3(args, train_dataset, test_dataset1, test_dataset2, test_
         for idx in idxs_users:
             local_model = LocalUpdate(args=args, dataset=train_dataset, idxs=user_groups[idx])
             if args.dataset == 'UTD':
-                if idx<2:
+                if idx<5:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m1_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
-                elif idx>=2 and idx<4:
+                elif idx>=5 and idx<11:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m2_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 else:
                     w, w1, loss, acc, protos = local_model.update_weights_het_mm_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
-            elif args.dataset == 'UMPC' or 'MMAct':
+            elif args.dataset == 'UMPC' or args.dataset == 'MMAct':
                 if idx<8:
                     w, w1, loss, acc, protos = local_model.update_weights_het_m1_3(args, idx, global_protos, model=copy.deepcopy(local_model_list[idx]), classifier=copy.deepcopy(local_classifier_list[idx]), global_round=round)
                 elif idx>=8 and idx<16:
@@ -301,6 +301,9 @@ def FedProto_taskheter3(args, train_dataset, test_dataset1, test_dataset2, test_
     #     for i, proto in enumerate(protos, start=1):
     #         print(f"  Modality {i}: {proto}")
         # acc_list_l, acc_list_g, loss_list = test_inference_new_het_lt(flag, args, local_model_list, local_classifier_list, test_dataset1, test_dataset2, test_dataset12, global_protos)
+        local_model_list, local_classifier_list, local_model, local_classifier = aggregate_global_models_c3(local_model_list,   , user_groups, args)
+
+
         flag = 1
         acc_list_g1, acc_list_g2, acc_list_g12, acc_list_l = test_inference_new_het_lt(flag, args, local_model_list, local_classifier_list, test_dataset1, test_dataset2, test_noisy_12, global_protos)
     #     print('For all users (with protos), mean of test acc is {:.5f}, std of test acc is {:.5f}'.format(np.mean(acc_list_g),np.std(acc_list_g)))
@@ -503,6 +506,12 @@ if __name__ == '__main__':
     # TODO
     '''个人感觉特征和原型这里不要分开搞，有可能圆形拉近了，但特征不近（没试）'''
     '''数据集单模态划分的时候舍弃了一部分数据，这里可以优化'''
+    def set_seed(seed):
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+    set_seed(42)
     start_time = time.time()
 
     args = args_parser()
@@ -671,13 +680,13 @@ if __name__ == '__main__':
             local_model.load_state_dict(initial_weight)
 
         elif args.dataset == 'UTD':
-            if i<2:
+            if i<5:
                 local_model = MyUTDModelFeature1(input_size=1, p1_size=7552)
                 local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn.state_dict())
                 local_model.head_1.load_state_dict(head1.state_dict())
                 local_classifier = FeatureClassifier(args)
                 local_classifier.load_state_dict(classifier_uni.state_dict())
-            elif i>=2 and i<4:
+            elif i>=5 and i<10:
                 local_model = MyUTDModelFeature2(1, 2688, args.dataset)
                 local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn.state_dict())
                 local_model.head_2.load_state_dict(head2.state_dict())

@@ -7,7 +7,7 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 import copy
 import numpy as np
-from models import CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, LinearClassifierAttn, FeatureClassifier, cnn_layers_1, cnn_layers_2, HeadModule
+from models import CNNFemnist, MyUTDModelFeature1, MyUTDModelFeature2, MyUTDModelFeature, LinearClassifierAttn, FeatureClassifier, cnn_layers_1, cnn_layers_2, HeadModule, DualModalClassifier
 from utils import global_test, extract_data_from_dataloader, average_state_dicts, distillation_loss, visualize_prototypes_with_tsne
 from cosmo.cmc_design import FeatureConstructor, CMCLoss
 
@@ -1494,14 +1494,14 @@ def test_inference_new_het_lt(flag, args, local_model_list, local_classifier_lis
     loss_list = []
     model1 = agg_model_m1(local_model_list, args)
     model2 = agg_model_m2(local_model_list, args)
-    model12 = agg_model_mm(local_model_list, args) #local_model_list[-1] # agg_model(local_model_list)
+    # model12 = agg_model_mm(local_model_list, args) #local_model_list[-1] # agg_model(local_model_list)
     classifier1, classifier2, classifier12 = aggregate_classifiers(local_classifier_list, args) # agg_linear_classifier_attn(local_classifier_list, args) # local_classifier_list[-1]
     model1.to(args.device)
     model2.to(args.device)
-    model12.to(args.device)
+    # model12.to(args.device)
     classifier1.to(args.device)
     classifier2.to(args.device)
-    classifier12.to(args.device)
+    # classifier12.to(args.device)
     # test_dataset = extract_data_from_dataloader(test_dataset)
     # testloader = global_test(args, test_dataset)
     # with proto
@@ -1532,8 +1532,8 @@ def test_inference_new_het_lt(flag, args, local_model_list, local_classifier_lis
             total += len(labels)
 
         acc = correct / total
-        # if flag == 1:
-            # print('| Global Test Unimodality Acc with protos: {:.5f}'.format(acc))
+        if flag == 1:
+            print('| Global Test Unimodality Acc with protos: {:.5f}'.format(acc))
         acc_list_g.append(acc)
 
         # classifier.eval()
@@ -1628,7 +1628,8 @@ def test_inference_new_het_lt(flag, args, local_model_list, local_classifier_lis
         return acc_list_g, acc_list_l
     acc_list_g1 = modality1(model1, classifier1, test_dataset1, global_protos, 1)
     acc_list_g2 = modality1(model2, classifier2, test_dataset2, global_protos, 2)
-    acc_list_g12, acc_list_l = multi(model12, classifier12, test_dataset12, global_protos)
+    # acc_list_g12, acc_list_l = multi(model12, classifier12, test_dataset12, global_protos)
+    acc_list_g12, acc_list_l = 0,0
     return acc_list_g1, acc_list_g2, acc_list_g12, acc_list_l
     # test (local model)
     model.eval()
@@ -1846,9 +1847,10 @@ def aggregate_classifiers(local_model_list, args):
         if len(local_model_list) < 5:
             raise ValueError("local_model_list should have at least 5 models.")
 
-        model1 = agg_linear_classifier_attn(local_model_list[:2], args)
-        model2 = agg_linear_classifier_attn(local_model_list[2:4], args)
-        model3 = agg_linear_classifier_attn([local_model_list[4]], args)
+        model1 = agg_linear_classifier_attn(local_model_list[:5], args)
+        model2 = agg_linear_classifier_attn(local_model_list[5:10], args)
+        # model3 = agg_linear_classifier_attn([local_model_list[4]], args)
+        model3 = None
     elif args.dataset == 'MMAct':
         if len(local_model_list) < 20:
             raise ValueError("local_model_list should have at least 5 models.")
@@ -1870,7 +1872,7 @@ def agg_feature_classifier(local_model_list, args):
 
     return aggregated_model
 
-def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_dataloader12, global_protos=[]):
+def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_dataloader12, global_protos, modeljuhe):
     """ Returns the test accuracy and loss. """
     loss_mse = nn.MSELoss()
     device = args.device
@@ -1878,7 +1880,8 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
     # Initialize models
     model1 = agg_model_m1(local_model_list, args)
     model2 = agg_model_m2(local_model_list, args)
-    model12 = agg_model_mm(local_model_list, args)
+    # model12 = agg_model_mm(local_model_list, args)
+    model12 = modeljuhe
     model1.to(device)
     model2.to(device)
     model12.to(device)
@@ -1897,7 +1900,7 @@ def test_proto(args, local_model_list, test_dataloader1, test_dataloader2, test_
             elif args.dataset == 'MMAct' and mdl == 2:
                 protos = model(m.permute(0,3,1,2).unsqueeze(1))
             else:
-                protos = model(m.unsqueeze(1))
+                protos = model(m)
             if not visualize_done:  # 如果函数还没有执行过
                 # visualize_prototypes_with_tsne(global_protos, protos, labels, save_img=True, img_path="./img_sne/")
                 visualize_done = True  # 改变标志的值
@@ -2276,8 +2279,8 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
 
     # 聚合 classifier_1_global 的权重
     if args.dataset == 'UTD':
-        classifier_1_indices = [0, 1, 4]
-        classifier_list_1 = [local_classifier_list[i].state_dict() if i < 2 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
+        classifier_1_indices = [0,1,2,3,4]# [0, 1, 4]
+        classifier_list_1 = [local_classifier_list[i].state_dict() if i < 5 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices] # 2
     elif args.dataset == 'MMAct':
         classifier_1_indices = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19]
         classifier_list_1 = [local_classifier_list[i].state_dict() if i < 8 else local_classifier_list[i].classifier_modality_1.state_dict() for i in classifier_1_indices]
@@ -2290,8 +2293,8 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
 
     # 聚合 classifier_2_global 的权重
     if args.dataset == 'UTD':
-        classifier_2_indices = [2, 3, 4]
-        classifier_list_2 = [local_classifier_list[i].state_dict() if i < 4 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
+        classifier_2_indices = [5,6,7,8,9]# [2, 3, 4]
+        classifier_list_2 = [local_classifier_list[i].state_dict() if i < 10 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
     elif args.dataset == 'MMAct':
         classifier_2_indices = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
         classifier_list_2 = [local_classifier_list[i].state_dict() if i < 16 else local_classifier_list[i].classifier_modality_2.state_dict() for i in classifier_2_indices]
@@ -2316,14 +2319,23 @@ def aggregate_global_models(local_model_list, local_classifier_list, user_groups
     # 将聚合后的分类器权重重新分配给本地分类器
     for i, local_classifier in enumerate(local_classifier_list):
         if i in classifier_1_indices:
-            if (args.dataset == 'UTD' and i == 4) or (args.dataset == 'MMAct' and i in [16, 17, 18, 19]):
-                local_classifier.classifier_modality_1.load_state_dict(classifier_1_global.state_dict())
-            else:
-                local_classifier.load_state_dict(classifier_1_global.state_dict())
+            # if (args.dataset == 'UTD' and i == 4) or (args.dataset == 'MMAct' and i in [16, 17, 18, 19]):
+            #     local_classifier.classifier_modality_1.load_state_dict(classifier_1_global.state_dict())
+            # else:
+            local_classifier.load_state_dict(classifier_1_global.state_dict())
         if i in classifier_2_indices:
-            if (args.dataset == 'UTD' and i == 4) or (args.dataset == 'MMAct' and i in [16, 17, 18, 19]):
-                local_classifier.classifier_modality_2.load_state_dict(classifier_2_global.state_dict())
-            else:
-                local_classifier.load_state_dict(classifier_2_global.state_dict())
+            # if (args.dataset == 'UTD' and i == 4) or (args.dataset == 'MMAct' and i in [16, 17, 18, 19]):
+            #     local_classifier.classifier_modality_2.load_state_dict(classifier_2_global.state_dict())
+            # else:
+            local_classifier.load_state_dict(classifier_2_global.state_dict())
 
-    return local_model_list, local_classifier_list
+    # 没有多模态客户端的话，聚合成出来一个看看成色
+    local_model = MyUTDModelFeature(1, 7552, 2688, args.dataset)
+    local_model.encoder.imu_cnn_layers.load_state_dict(imu_cnn_global.state_dict())
+    local_model.encoder.skeleton_cnn_layers.load_state_dict(ske_cnn_global.state_dict())
+    local_model.head_1.load_state_dict(head1_global.state_dict())
+    local_model.head_2.load_state_dict(head2_global.state_dict())
+    local_classifier = DualModalClassifier(args)
+    local_classifier.classifier_modality_1.load_state_dict(classifier_1_global.state_dict())
+    local_classifier.classifier_modality_2.load_state_dict(classifier_2_global.state_dict())
+    return local_model_list, local_classifier_list, local_model, local_classifier
