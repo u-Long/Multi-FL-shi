@@ -1,0 +1,660 @@
+
+Experimental details:
+    Model     : cnn
+    Optimizer : sgd
+    Learning  : 0.01
+    Global Rounds   : 10
+
+    Federated parameters:
+    IID
+    Fraction of users  : 0.04
+    Local Batch size   : 4
+    Local Epochs       : 5
+
+train labeled data:
+No such file: a8_s1_t4
+No such file: a8_s1_t4
+(416, 120, 6)
+(416, 40, 20, 3)
+(416,)
+test data:
+No such file: a23_s6_t4
+No such file: a23_s6_t4
+(215, 120, 6)
+(215, 40, 20, 3)
+(215,)
+unlabeled data:
+No such file: a27_s8_t4
+No such file: a27_s8_t4
+(215, 120, 6)
+(215, 40, 20, 3)
+(215,)
+
+ | Global Training Round : 1 |
+
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/transformers/utils/generic.py:441: UserWarning: torch.utils._pytree._register_pytree_node is deprecated. Please use torch.utils._pytree.register_pytree_node instead.
+  _torch_pytree._register_pytree_node(
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/transformers/utils/generic.py:309: UserWarning: torch.utils._pytree._register_pytree_node is deprecated. Please use torch.utils._pytree.register_pytree_node instead.
+  _torch_pytree._register_pytree_node(
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/torch/cuda/__init__.py:619: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+| Global Round : 0 | User: 0 | Local Epoch : 0 | Loss: 3.145 | Acc: 0.125
+| Global Round : 0 | User: 0 | Local Epoch : 1 | Loss: 1.870 | Acc: 0.500
+| Global Round : 0 | User: 0 | Local Epoch : 2 | Loss: 2.031 | Acc: 0.375
+| Global Round : 0 | User: 0 | Local Epoch : 3 | Loss: 1.836 | Acc: 0.375
+| Global Round : 0 | User: 0 | Local Epoch : 4 | Loss: 1.294 | Acc: 0.625
+| Global Round : 0 | User: 1 | Local Epoch : 0 | Loss: 3.082 | Acc: 0.125
+| Global Round : 0 | User: 1 | Local Epoch : 1 | Loss: 2.333 | Acc: 0.250
+| Global Round : 0 | User: 1 | Local Epoch : 2 | Loss: 2.185 | Acc: 0.375
+| Global Round : 0 | User: 1 | Local Epoch : 3 | Loss: 1.851 | Acc: 0.625
+| Global Round : 0 | User: 1 | Local Epoch : 4 | Loss: 1.600 | Acc: 0.625
+| Global Round : 0 | User: 2 | Local Epoch : 0 | Loss: 3.246 | Acc: 0.000
+| Global Round : 0 | User: 2 | Local Epoch : 1 | Loss: 2.558 | Acc: 0.250
+| Global Round : 0 | User: 2 | Local Epoch : 2 | Loss: 2.642 | Acc: 0.250
+| Global Round : 0 | User: 2 | Local Epoch : 3 | Loss: 1.939 | Acc: 0.250
+| Global Round : 0 | User: 2 | Local Epoch : 4 | Loss: 1.239 | Acc: 0.750
+| Global Round : 0 | User: 3 | Local Epoch : 0 | Loss: 3.302 | Acc: 0.125
+| Global Round : 0 | User: 3 | Local Epoch : 1 | Loss: 2.392 | Acc: 0.250
+| Global Round : 0 | User: 3 | Local Epoch : 2 | Loss: 2.727 | Acc: 0.125
+| Global Round : 0 | User: 3 | Local Epoch : 3 | Loss: 1.653 | Acc: 0.500
+| Global Round : 0 | User: 3 | Local Epoch : 4 | Loss: 1.724 | Acc: 0.250
+| Global Round : 0 | User: 4 | Local Epoch : 0 | Loss: 2.973 | Acc: 0.125
+| Global Round : 0 | User: 4 | Local Epoch : 1 | Loss: 2.635 | Acc: 0.250
+| Global Round : 0 | User: 4 | Local Epoch : 2 | Loss: 2.152 | Acc: 0.250
+| Global Round : 0 | User: 4 | Local Epoch : 3 | Loss: 2.076 | Acc: 0.250
+| Global Round : 0 | User: 4 | Local Epoch : 4 | Loss: 1.994 | Acc: 0.250
+| Global Round : 0 | User: 5 | Local Epoch : 0 | Loss: 3.024 | Acc: 0.125
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/torch/nn/modules/conv.py:605: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv3d(
+| Global Round : 0 | User: 5 | Local Epoch : 1 | Loss: 2.470 | Acc: 0.250
+| Global Round : 0 | User: 5 | Local Epoch : 2 | Loss: 1.770 | Acc: 0.500
+| Global Round : 0 | User: 5 | Local Epoch : 3 | Loss: 2.019 | Acc: 0.375
+| Global Round : 0 | User: 5 | Local Epoch : 4 | Loss: 1.351 | Acc: 0.375
+| Global Round : 0 | User: 6 | Local Epoch : 0 | Loss: 3.387 | Acc: 0.000
+| Global Round : 0 | User: 6 | Local Epoch : 1 | Loss: 2.733 | Acc: 0.250
+| Global Round : 0 | User: 6 | Local Epoch : 2 | Loss: 2.306 | Acc: 0.250
+| Global Round : 0 | User: 6 | Local Epoch : 3 | Loss: 2.429 | Acc: 0.250
+| Global Round : 0 | User: 6 | Local Epoch : 4 | Loss: 1.662 | Acc: 0.625
+| Global Round : 0 | User: 7 | Local Epoch : 0 | Loss: 2.538 | Acc: 0.625
+| Global Round : 0 | User: 7 | Local Epoch : 1 | Loss: 2.423 | Acc: 0.125
+| Global Round : 0 | User: 7 | Local Epoch : 2 | Loss: 2.313 | Acc: 0.250
+| Global Round : 0 | User: 7 | Local Epoch : 3 | Loss: 1.999 | Acc: 0.375
+| Global Round : 0 | User: 7 | Local Epoch : 4 | Loss: 2.080 | Acc: 0.500
+| Global Round : 0 | User: 8 | Local Epoch : 0 | Loss: 2.720 | Acc: 0.375
+| Global Round : 0 | User: 8 | Local Epoch : 1 | Loss: 2.549 | Acc: 0.250
+| Global Round : 0 | User: 8 | Local Epoch : 2 | Loss: 2.229 | Acc: 0.125
+| Global Round : 0 | User: 8 | Local Epoch : 3 | Loss: 2.178 | Acc: 0.125
+| Global Round : 0 | User: 8 | Local Epoch : 4 | Loss: 2.458 | Acc: 0.250
+| Global Round : 0 | User: 9 | Local Epoch : 0 | Loss: 2.925 | Acc: 0.375
+| Global Round : 0 | User: 9 | Local Epoch : 1 | Loss: 2.363 | Acc: 0.250
+| Global Round : 0 | User: 9 | Local Epoch : 2 | Loss: 2.085 | Acc: 0.375
+| Global Round : 0 | User: 9 | Local Epoch : 3 | Loss: 1.929 | Acc: 0.500
+| Global Round : 0 | User: 9 | Local Epoch : 4 | Loss: 1.928 | Acc: 0.250
+
+ | Global Training Round : 2 |
+
+| Global Round : 1 | User: 0 | Local Epoch : 0 | Loss: 0.737 | Acc: 0.875
+| Global Round : 1 | User: 0 | Local Epoch : 1 | Loss: 1.137 | Acc: 0.750
+| Global Round : 1 | User: 0 | Local Epoch : 2 | Loss: 1.147 | Acc: 0.875
+| Global Round : 1 | User: 0 | Local Epoch : 3 | Loss: 1.070 | Acc: 0.750
+| Global Round : 1 | User: 0 | Local Epoch : 4 | Loss: 0.349 | Acc: 0.875
+| Global Round : 1 | User: 1 | Local Epoch : 0 | Loss: 1.348 | Acc: 0.375
+| Global Round : 1 | User: 1 | Local Epoch : 1 | Loss: 1.227 | Acc: 0.625
+| Global Round : 1 | User: 1 | Local Epoch : 2 | Loss: 0.957 | Acc: 0.875
+| Global Round : 1 | User: 1 | Local Epoch : 3 | Loss: 1.397 | Acc: 0.375
+| Global Round : 1 | User: 1 | Local Epoch : 4 | Loss: 1.166 | Acc: 0.625
+| Global Round : 1 | User: 2 | Local Epoch : 0 | Loss: 1.481 | Acc: 0.750
+| Global Round : 1 | User: 2 | Local Epoch : 1 | Loss: 0.913 | Acc: 0.750
+| Global Round : 1 | User: 2 | Local Epoch : 2 | Loss: 1.238 | Acc: 0.750
+| Global Round : 1 | User: 2 | Local Epoch : 3 | Loss: 0.802 | Acc: 0.750
+| Global Round : 1 | User: 2 | Local Epoch : 4 | Loss: 0.664 | Acc: 0.875
+| Global Round : 1 | User: 3 | Local Epoch : 0 | Loss: 1.650 | Acc: 0.500
+| Global Round : 1 | User: 3 | Local Epoch : 1 | Loss: 1.119 | Acc: 0.500
+| Global Round : 1 | User: 3 | Local Epoch : 2 | Loss: 1.267 | Acc: 0.625
+| Global Round : 1 | User: 3 | Local Epoch : 3 | Loss: 0.709 | Acc: 0.875
+| Global Round : 1 | User: 3 | Local Epoch : 4 | Loss: 1.284 | Acc: 0.375
+| Global Round : 1 | User: 4 | Local Epoch : 0 | Loss: 1.193 | Acc: 0.750
+| Global Round : 1 | User: 4 | Local Epoch : 1 | Loss: 1.251 | Acc: 0.500
+| Global Round : 1 | User: 4 | Local Epoch : 2 | Loss: 0.843 | Acc: 0.625
+| Global Round : 1 | User: 4 | Local Epoch : 3 | Loss: 1.123 | Acc: 0.750
+| Global Round : 1 | User: 4 | Local Epoch : 4 | Loss: 0.792 | Acc: 0.625
+| Global Round : 1 | User: 5 | Local Epoch : 0 | Loss: 1.826 | Acc: 0.375
+| Global Round : 1 | User: 5 | Local Epoch : 1 | Loss: 1.809 | Acc: 0.375
+| Global Round : 1 | User: 5 | Local Epoch : 2 | Loss: 1.143 | Acc: 0.500
+| Global Round : 1 | User: 5 | Local Epoch : 3 | Loss: 1.417 | Acc: 0.500
+| Global Round : 1 | User: 5 | Local Epoch : 4 | Loss: 1.362 | Acc: 0.375
+| Global Round : 1 | User: 6 | Local Epoch : 0 | Loss: 2.291 | Acc: 0.250
+| Global Round : 1 | User: 6 | Local Epoch : 1 | Loss: 1.419 | Acc: 0.500
+| Global Round : 1 | User: 6 | Local Epoch : 2 | Loss: 1.904 | Acc: 0.375
+| Global Round : 1 | User: 6 | Local Epoch : 3 | Loss: 0.864 | Acc: 0.875
+| Global Round : 1 | User: 6 | Local Epoch : 4 | Loss: 1.036 | Acc: 0.875
+| Global Round : 1 | User: 7 | Local Epoch : 0 | Loss: 1.169 | Acc: 0.500
+| Global Round : 1 | User: 7 | Local Epoch : 1 | Loss: 1.541 | Acc: 0.500
+| Global Round : 1 | User: 7 | Local Epoch : 2 | Loss: 1.037 | Acc: 0.625
+| Global Round : 1 | User: 7 | Local Epoch : 3 | Loss: 1.448 | Acc: 0.375
+| Global Round : 1 | User: 7 | Local Epoch : 4 | Loss: 0.963 | Acc: 0.625
+| Global Round : 1 | User: 8 | Local Epoch : 0 | Loss: 1.113 | Acc: 0.875
+| Global Round : 1 | User: 8 | Local Epoch : 1 | Loss: 1.468 | Acc: 0.625
+| Global Round : 1 | User: 8 | Local Epoch : 2 | Loss: 1.423 | Acc: 0.625
+| Global Round : 1 | User: 8 | Local Epoch : 3 | Loss: 1.892 | Acc: 0.125
+| Global Round : 1 | User: 8 | Local Epoch : 4 | Loss: 0.748 | Acc: 0.625
+| Global Round : 1 | User: 9 | Local Epoch : 0 | Loss: 1.834 | Acc: 0.375
+| Global Round : 1 | User: 9 | Local Epoch : 1 | Loss: 1.444 | Acc: 0.625
+| Global Round : 1 | User: 9 | Local Epoch : 2 | Loss: 1.998 | Acc: 0.250
+| Global Round : 1 | User: 9 | Local Epoch : 3 | Loss: 1.615 | Acc: 0.500
+| Global Round : 1 | User: 9 | Local Epoch : 4 | Loss: 0.686 | Acc: 0.875
+
+ | Global Training Round : 3 |
+
+| Global Round : 2 | User: 0 | Local Epoch : 0 | Loss: 0.486 | Acc: 0.875
+| Global Round : 2 | User: 0 | Local Epoch : 1 | Loss: 0.430 | Acc: 0.750
+| Global Round : 2 | User: 0 | Local Epoch : 2 | Loss: 0.710 | Acc: 0.625
+| Global Round : 2 | User: 0 | Local Epoch : 3 | Loss: 0.473 | Acc: 0.875
+| Global Round : 2 | User: 0 | Local Epoch : 4 | Loss: 0.857 | Acc: 0.750
+| Global Round : 2 | User: 1 | Local Epoch : 0 | Loss: 0.920 | Acc: 0.750
+| Global Round : 2 | User: 1 | Local Epoch : 1 | Loss: 0.696 | Acc: 0.875
+| Global Round : 2 | User: 1 | Local Epoch : 2 | Loss: 0.695 | Acc: 0.750
+| Global Round : 2 | User: 1 | Local Epoch : 3 | Loss: 0.428 | Acc: 0.875
+| Global Round : 2 | User: 1 | Local Epoch : 4 | Loss: 0.780 | Acc: 0.875
+| Global Round : 2 | User: 2 | Local Epoch : 0 | Loss: 0.443 | Acc: 0.875
+| Global Round : 2 | User: 2 | Local Epoch : 1 | Loss: 1.218 | Acc: 0.500
+| Global Round : 2 | User: 2 | Local Epoch : 2 | Loss: 0.353 | Acc: 1.000
+| Global Round : 2 | User: 2 | Local Epoch : 3 | Loss: 0.284 | Acc: 1.000
+| Global Round : 2 | User: 2 | Local Epoch : 4 | Loss: 0.867 | Acc: 0.625
+| Global Round : 2 | User: 3 | Local Epoch : 0 | Loss: 0.294 | Acc: 1.000
+| Global Round : 2 | User: 3 | Local Epoch : 1 | Loss: 0.964 | Acc: 0.875
+| Global Round : 2 | User: 3 | Local Epoch : 2 | Loss: 0.551 | Acc: 0.750
+| Global Round : 2 | User: 3 | Local Epoch : 3 | Loss: 0.935 | Acc: 0.750
+| Global Round : 2 | User: 3 | Local Epoch : 4 | Loss: 0.699 | Acc: 0.875
+| Global Round : 2 | User: 4 | Local Epoch : 0 | Loss: 0.847 | Acc: 0.750
+| Global Round : 2 | User: 4 | Local Epoch : 1 | Loss: 1.330 | Acc: 0.500
+| Global Round : 2 | User: 4 | Local Epoch : 2 | Loss: 0.233 | Acc: 1.000
+| Global Round : 2 | User: 4 | Local Epoch : 3 | Loss: 0.936 | Acc: 0.750
+| Global Round : 2 | User: 4 | Local Epoch : 4 | Loss: 0.455 | Acc: 0.750
+| Global Round : 2 | User: 5 | Local Epoch : 0 | Loss: 0.908 | Acc: 0.750
+| Global Round : 2 | User: 5 | Local Epoch : 1 | Loss: 0.906 | Acc: 0.750
+| Global Round : 2 | User: 5 | Local Epoch : 2 | Loss: 1.240 | Acc: 0.625
+| Global Round : 2 | User: 5 | Local Epoch : 3 | Loss: 0.974 | Acc: 0.750
+| Global Round : 2 | User: 5 | Local Epoch : 4 | Loss: 1.419 | Acc: 0.625
+| Global Round : 2 | User: 6 | Local Epoch : 0 | Loss: 0.732 | Acc: 0.875
+| Global Round : 2 | User: 6 | Local Epoch : 1 | Loss: 1.204 | Acc: 0.750
+| Global Round : 2 | User: 6 | Local Epoch : 2 | Loss: 2.253 | Acc: 0.375
+| Global Round : 2 | User: 6 | Local Epoch : 3 | Loss: 1.513 | Acc: 0.500
+| Global Round : 2 | User: 6 | Local Epoch : 4 | Loss: 1.138 | Acc: 0.875
+| Global Round : 2 | User: 7 | Local Epoch : 0 | Loss: 0.832 | Acc: 0.875
+| Global Round : 2 | User: 7 | Local Epoch : 1 | Loss: 1.068 | Acc: 0.500
+| Global Round : 2 | User: 7 | Local Epoch : 2 | Loss: 1.075 | Acc: 0.625
+| Global Round : 2 | User: 7 | Local Epoch : 3 | Loss: 0.848 | Acc: 0.750
+| Global Round : 2 | User: 7 | Local Epoch : 4 | Loss: 1.140 | Acc: 0.625
+| Global Round : 2 | User: 8 | Local Epoch : 0 | Loss: 0.732 | Acc: 0.875
+| Global Round : 2 | User: 8 | Local Epoch : 1 | Loss: 0.798 | Acc: 0.625
+| Global Round : 2 | User: 8 | Local Epoch : 2 | Loss: 0.906 | Acc: 0.625
+| Global Round : 2 | User: 8 | Local Epoch : 3 | Loss: 0.665 | Acc: 0.875
+| Global Round : 2 | User: 8 | Local Epoch : 4 | Loss: 0.599 | Acc: 0.875
+| Global Round : 2 | User: 9 | Local Epoch : 0 | Loss: 1.222 | Acc: 0.500
+| Global Round : 2 | User: 9 | Local Epoch : 1 | Loss: 1.234 | Acc: 0.500
+| Global Round : 2 | User: 9 | Local Epoch : 2 | Loss: 1.009 | Acc: 0.625
+| Global Round : 2 | User: 9 | Local Epoch : 3 | Loss: 1.671 | Acc: 0.500
+| Global Round : 2 | User: 9 | Local Epoch : 4 | Loss: 1.238 | Acc: 0.500
+
+ | Global Training Round : 4 |
+
+| Global Round : 3 | User: 0 | Local Epoch : 0 | Loss: 0.127 | Acc: 1.000
+| Global Round : 3 | User: 0 | Local Epoch : 1 | Loss: 0.221 | Acc: 1.000
+| Global Round : 3 | User: 0 | Local Epoch : 2 | Loss: 0.061 | Acc: 1.000
+| Global Round : 3 | User: 0 | Local Epoch : 3 | Loss: 0.277 | Acc: 0.875
+| Global Round : 3 | User: 0 | Local Epoch : 4 | Loss: 0.518 | Acc: 0.875
+| Global Round : 3 | User: 1 | Local Epoch : 0 | Loss: 0.655 | Acc: 0.750
+| Global Round : 3 | User: 1 | Local Epoch : 1 | Loss: 0.438 | Acc: 1.000
+| Global Round : 3 | User: 1 | Local Epoch : 2 | Loss: 0.316 | Acc: 1.000
+| Global Round : 3 | User: 1 | Local Epoch : 3 | Loss: 0.506 | Acc: 0.875
+| Global Round : 3 | User: 1 | Local Epoch : 4 | Loss: 0.240 | Acc: 1.000
+| Global Round : 3 | User: 2 | Local Epoch : 0 | Loss: 0.301 | Acc: 1.000
+| Global Round : 3 | User: 2 | Local Epoch : 1 | Loss: 0.162 | Acc: 1.000
+| Global Round : 3 | User: 2 | Local Epoch : 2 | Loss: 0.320 | Acc: 1.000
+| Global Round : 3 | User: 2 | Local Epoch : 3 | Loss: 0.276 | Acc: 1.000
+| Global Round : 3 | User: 2 | Local Epoch : 4 | Loss: 1.299 | Acc: 0.375
+| Global Round : 3 | User: 3 | Local Epoch : 0 | Loss: 0.198 | Acc: 1.000
+| Global Round : 3 | User: 3 | Local Epoch : 1 | Loss: 0.584 | Acc: 0.875
+| Global Round : 3 | User: 3 | Local Epoch : 2 | Loss: 0.260 | Acc: 0.875
+| Global Round : 3 | User: 3 | Local Epoch : 3 | Loss: 0.208 | Acc: 1.000
+| Global Round : 3 | User: 3 | Local Epoch : 4 | Loss: 0.646 | Acc: 0.750
+| Global Round : 3 | User: 4 | Local Epoch : 0 | Loss: 0.221 | Acc: 1.000
+| Global Round : 3 | User: 4 | Local Epoch : 1 | Loss: 0.463 | Acc: 0.875
+| Global Round : 3 | User: 4 | Local Epoch : 2 | Loss: 0.425 | Acc: 0.875
+| Global Round : 3 | User: 4 | Local Epoch : 3 | Loss: 0.495 | Acc: 0.875
+| Global Round : 3 | User: 4 | Local Epoch : 4 | Loss: 0.106 | Acc: 1.000
+| Global Round : 3 | User: 5 | Local Epoch : 0 | Loss: 0.955 | Acc: 0.875
+| Global Round : 3 | User: 5 | Local Epoch : 1 | Loss: 0.909 | Acc: 0.625
+| Global Round : 3 | User: 5 | Local Epoch : 2 | Loss: 0.537 | Acc: 0.875
+| Global Round : 3 | User: 5 | Local Epoch : 3 | Loss: 1.204 | Acc: 0.750
+| Global Round : 3 | User: 5 | Local Epoch : 4 | Loss: 0.386 | Acc: 1.000
+| Global Round : 3 | User: 6 | Local Epoch : 0 | Loss: 0.646 | Acc: 0.875
+| Global Round : 3 | User: 6 | Local Epoch : 1 | Loss: 1.105 | Acc: 0.625
+| Global Round : 3 | User: 6 | Local Epoch : 2 | Loss: 1.254 | Acc: 0.375
+| Global Round : 3 | User: 6 | Local Epoch : 3 | Loss: 0.910 | Acc: 0.750
+| Global Round : 3 | User: 6 | Local Epoch : 4 | Loss: 1.239 | Acc: 0.625
+| Global Round : 3 | User: 7 | Local Epoch : 0 | Loss: 0.709 | Acc: 0.875
+| Global Round : 3 | User: 7 | Local Epoch : 1 | Loss: 0.975 | Acc: 0.875
+| Global Round : 3 | User: 7 | Local Epoch : 2 | Loss: 0.680 | Acc: 0.625
+| Global Round : 3 | User: 7 | Local Epoch : 3 | Loss: 0.630 | Acc: 0.750
+| Global Round : 3 | User: 7 | Local Epoch : 4 | Loss: 1.448 | Acc: 0.625
+| Global Round : 3 | User: 8 | Local Epoch : 0 | Loss: 1.361 | Acc: 0.500
+| Global Round : 3 | User: 8 | Local Epoch : 1 | Loss: 0.676 | Acc: 1.000
+| Global Round : 3 | User: 8 | Local Epoch : 2 | Loss: 1.932 | Acc: 0.500
+| Global Round : 3 | User: 8 | Local Epoch : 3 | Loss: 0.941 | Acc: 0.750
+| Global Round : 3 | User: 8 | Local Epoch : 4 | Loss: 0.909 | Acc: 0.500
+| Global Round : 3 | User: 9 | Local Epoch : 0 | Loss: 0.691 | Acc: 0.875
+| Global Round : 3 | User: 9 | Local Epoch : 1 | Loss: 0.886 | Acc: 0.750
+| Global Round : 3 | User: 9 | Local Epoch : 2 | Loss: 0.901 | Acc: 0.625
+| Global Round : 3 | User: 9 | Local Epoch : 3 | Loss: 0.666 | Acc: 0.750
+| Global Round : 3 | User: 9 | Local Epoch : 4 | Loss: 0.325 | Acc: 1.000
+
+ | Global Training Round : 5 |
+
+| Global Round : 4 | User: 0 | Local Epoch : 0 | Loss: 0.184 | Acc: 1.000
+| Global Round : 4 | User: 0 | Local Epoch : 1 | Loss: 0.164 | Acc: 1.000
+| Global Round : 4 | User: 0 | Local Epoch : 2 | Loss: 0.271 | Acc: 0.875
+| Global Round : 4 | User: 0 | Local Epoch : 3 | Loss: 0.226 | Acc: 1.000
+| Global Round : 4 | User: 0 | Local Epoch : 4 | Loss: 0.100 | Acc: 1.000
+| Global Round : 4 | User: 1 | Local Epoch : 0 | Loss: 0.301 | Acc: 1.000
+| Global Round : 4 | User: 1 | Local Epoch : 1 | Loss: 0.284 | Acc: 0.875
+| Global Round : 4 | User: 1 | Local Epoch : 2 | Loss: 0.058 | Acc: 1.000
+| Global Round : 4 | User: 1 | Local Epoch : 3 | Loss: 0.219 | Acc: 1.000
+| Global Round : 4 | User: 1 | Local Epoch : 4 | Loss: 0.047 | Acc: 1.000
+| Global Round : 4 | User: 2 | Local Epoch : 0 | Loss: 0.212 | Acc: 1.000
+| Global Round : 4 | User: 2 | Local Epoch : 1 | Loss: 0.126 | Acc: 1.000
+| Global Round : 4 | User: 2 | Local Epoch : 2 | Loss: 0.092 | Acc: 1.000
+| Global Round : 4 | User: 2 | Local Epoch : 3 | Loss: 0.140 | Acc: 1.000
+| Global Round : 4 | User: 2 | Local Epoch : 4 | Loss: 0.109 | Acc: 1.000
+| Global Round : 4 | User: 3 | Local Epoch : 0 | Loss: 0.348 | Acc: 1.000
+| Global Round : 4 | User: 3 | Local Epoch : 1 | Loss: 0.292 | Acc: 1.000
+| Global Round : 4 | User: 3 | Local Epoch : 2 | Loss: 0.689 | Acc: 0.750
+| Global Round : 4 | User: 3 | Local Epoch : 3 | Loss: 0.395 | Acc: 0.875
+| Global Round : 4 | User: 3 | Local Epoch : 4 | Loss: 0.272 | Acc: 0.875
+| Global Round : 4 | User: 4 | Local Epoch : 0 | Loss: 0.662 | Acc: 0.625
+| Global Round : 4 | User: 4 | Local Epoch : 1 | Loss: 0.220 | Acc: 0.875
+| Global Round : 4 | User: 4 | Local Epoch : 2 | Loss: 0.283 | Acc: 1.000
+| Global Round : 4 | User: 4 | Local Epoch : 3 | Loss: 0.399 | Acc: 1.000
+| Global Round : 4 | User: 4 | Local Epoch : 4 | Loss: 0.118 | Acc: 1.000
+| Global Round : 4 | User: 5 | Local Epoch : 0 | Loss: 0.614 | Acc: 0.875
+| Global Round : 4 | User: 5 | Local Epoch : 1 | Loss: 0.751 | Acc: 0.750
+| Global Round : 4 | User: 5 | Local Epoch : 2 | Loss: 1.451 | Acc: 0.625
+| Global Round : 4 | User: 5 | Local Epoch : 3 | Loss: 0.832 | Acc: 0.750
+| Global Round : 4 | User: 5 | Local Epoch : 4 | Loss: 0.662 | Acc: 0.750
+| Global Round : 4 | User: 6 | Local Epoch : 0 | Loss: 1.099 | Acc: 0.500
+| Global Round : 4 | User: 6 | Local Epoch : 1 | Loss: 0.350 | Acc: 0.875
+| Global Round : 4 | User: 6 | Local Epoch : 2 | Loss: 0.279 | Acc: 1.000
+| Global Round : 4 | User: 6 | Local Epoch : 3 | Loss: 0.665 | Acc: 0.875
+| Global Round : 4 | User: 6 | Local Epoch : 4 | Loss: 0.743 | Acc: 0.500
+| Global Round : 4 | User: 7 | Local Epoch : 0 | Loss: 0.270 | Acc: 1.000
+| Global Round : 4 | User: 7 | Local Epoch : 1 | Loss: 0.706 | Acc: 0.500
+| Global Round : 4 | User: 7 | Local Epoch : 2 | Loss: 0.381 | Acc: 0.875
+| Global Round : 4 | User: 7 | Local Epoch : 3 | Loss: 0.863 | Acc: 0.625
+| Global Round : 4 | User: 7 | Local Epoch : 4 | Loss: 0.348 | Acc: 0.875
+| Global Round : 4 | User: 8 | Local Epoch : 0 | Loss: 0.665 | Acc: 0.750
+| Global Round : 4 | User: 8 | Local Epoch : 1 | Loss: 0.794 | Acc: 0.875
+| Global Round : 4 | User: 8 | Local Epoch : 2 | Loss: 1.412 | Acc: 0.500
+| Global Round : 4 | User: 8 | Local Epoch : 3 | Loss: 0.167 | Acc: 1.000
+| Global Round : 4 | User: 8 | Local Epoch : 4 | Loss: 0.402 | Acc: 0.750
+| Global Round : 4 | User: 9 | Local Epoch : 0 | Loss: 1.196 | Acc: 0.500
+| Global Round : 4 | User: 9 | Local Epoch : 1 | Loss: 0.455 | Acc: 1.000
+| Global Round : 4 | User: 9 | Local Epoch : 2 | Loss: 0.670 | Acc: 0.750
+| Global Round : 4 | User: 9 | Local Epoch : 3 | Loss: 0.392 | Acc: 0.750
+| Global Round : 4 | User: 9 | Local Epoch : 4 | Loss: 0.833 | Acc: 0.625
+
+ | Global Training Round : 6 |
+
+| Global Round : 5 | User: 0 | Local Epoch : 0 | Loss: 0.118 | Acc: 1.000
+| Global Round : 5 | User: 0 | Local Epoch : 1 | Loss: 0.055 | Acc: 1.000
+| Global Round : 5 | User: 0 | Local Epoch : 2 | Loss: 0.032 | Acc: 1.000
+| Global Round : 5 | User: 0 | Local Epoch : 3 | Loss: 0.605 | Acc: 0.875
+| Global Round : 5 | User: 0 | Local Epoch : 4 | Loss: 0.040 | Acc: 1.000
+| Global Round : 5 | User: 1 | Local Epoch : 0 | Loss: 0.115 | Acc: 1.000
+| Global Round : 5 | User: 1 | Local Epoch : 1 | Loss: 0.034 | Acc: 1.000
+| Global Round : 5 | User: 1 | Local Epoch : 2 | Loss: 0.317 | Acc: 0.875
+| Global Round : 5 | User: 1 | Local Epoch : 3 | Loss: 0.053 | Acc: 1.000
+| Global Round : 5 | User: 1 | Local Epoch : 4 | Loss: 0.115 | Acc: 1.000
+| Global Round : 5 | User: 2 | Local Epoch : 0 | Loss: 0.122 | Acc: 1.000
+| Global Round : 5 | User: 2 | Local Epoch : 1 | Loss: 0.454 | Acc: 0.875
+| Global Round : 5 | User: 2 | Local Epoch : 2 | Loss: 0.052 | Acc: 1.000
+| Global Round : 5 | User: 2 | Local Epoch : 3 | Loss: 0.575 | Acc: 0.750
+| Global Round : 5 | User: 2 | Local Epoch : 4 | Loss: 0.357 | Acc: 1.000
+| Global Round : 5 | User: 3 | Local Epoch : 0 | Loss: 0.116 | Acc: 1.000
+| Global Round : 5 | User: 3 | Local Epoch : 1 | Loss: 0.282 | Acc: 1.000
+| Global Round : 5 | User: 3 | Local Epoch : 2 | Loss: 0.512 | Acc: 0.875
+| Global Round : 5 | User: 3 | Local Epoch : 3 | Loss: 0.047 | Acc: 1.000
+| Global Round : 5 | User: 3 | Local Epoch : 4 | Loss: 0.106 | Acc: 1.000
+| Global Round : 5 | User: 4 | Local Epoch : 0 | Loss: 0.327 | Acc: 0.875
+| Global Round : 5 | User: 4 | Local Epoch : 1 | Loss: 0.561 | Acc: 0.875
+| Global Round : 5 | User: 4 | Local Epoch : 2 | Loss: 0.099 | Acc: 1.000
+| Global Round : 5 | User: 4 | Local Epoch : 3 | Loss: 0.616 | Acc: 0.750
+| Global Round : 5 | User: 4 | Local Epoch : 4 | Loss: 0.869 | Acc: 0.875
+| Global Round : 5 | User: 5 | Local Epoch : 0 | Loss: 0.538 | Acc: 0.875
+| Global Round : 5 | User: 5 | Local Epoch : 1 | Loss: 0.380 | Acc: 0.875
+| Global Round : 5 | User: 5 | Local Epoch : 2 | Loss: 0.596 | Acc: 0.875
+| Global Round : 5 | User: 5 | Local Epoch : 3 | Loss: 0.648 | Acc: 0.750
+| Global Round : 5 | User: 5 | Local Epoch : 4 | Loss: 0.435 | Acc: 0.875
+| Global Round : 5 | User: 6 | Local Epoch : 0 | Loss: 0.348 | Acc: 1.000
+| Global Round : 5 | User: 6 | Local Epoch : 1 | Loss: 0.713 | Acc: 0.750
+| Global Round : 5 | User: 6 | Local Epoch : 2 | Loss: 1.032 | Acc: 0.875
+| Global Round : 5 | User: 6 | Local Epoch : 3 | Loss: 0.639 | Acc: 0.625
+| Global Round : 5 | User: 6 | Local Epoch : 4 | Loss: 0.410 | Acc: 0.750
+| Global Round : 5 | User: 7 | Local Epoch : 0 | Loss: 1.035 | Acc: 0.750
+| Global Round : 5 | User: 7 | Local Epoch : 1 | Loss: 0.505 | Acc: 0.750
+| Global Round : 5 | User: 7 | Local Epoch : 2 | Loss: 1.151 | Acc: 0.500
+| Global Round : 5 | User: 7 | Local Epoch : 3 | Loss: 0.504 | Acc: 0.875
+| Global Round : 5 | User: 7 | Local Epoch : 4 | Loss: 0.428 | Acc: 0.750
+| Global Round : 5 | User: 8 | Local Epoch : 0 | Loss: 0.588 | Acc: 0.875
+| Global Round : 5 | User: 8 | Local Epoch : 1 | Loss: 0.281 | Acc: 1.000
+| Global Round : 5 | User: 8 | Local Epoch : 2 | Loss: 0.645 | Acc: 0.750
+| Global Round : 5 | User: 8 | Local Epoch : 3 | Loss: 0.314 | Acc: 1.000
+| Global Round : 5 | User: 8 | Local Epoch : 4 | Loss: 0.514 | Acc: 0.750
+| Global Round : 5 | User: 9 | Local Epoch : 0 | Loss: 0.389 | Acc: 0.875
+| Global Round : 5 | User: 9 | Local Epoch : 1 | Loss: 0.572 | Acc: 0.875
+| Global Round : 5 | User: 9 | Local Epoch : 2 | Loss: 0.166 | Acc: 1.000
+| Global Round : 5 | User: 9 | Local Epoch : 3 | Loss: 1.269 | Acc: 0.500
+| Global Round : 5 | User: 9 | Local Epoch : 4 | Loss: 0.522 | Acc: 0.750
+
+ | Global Training Round : 7 |
+
+| Global Round : 6 | User: 0 | Local Epoch : 0 | Loss: 0.035 | Acc: 1.000
+| Global Round : 6 | User: 0 | Local Epoch : 1 | Loss: 0.296 | Acc: 0.875
+| Global Round : 6 | User: 0 | Local Epoch : 2 | Loss: 0.037 | Acc: 1.000
+| Global Round : 6 | User: 0 | Local Epoch : 3 | Loss: 0.110 | Acc: 1.000
+| Global Round : 6 | User: 0 | Local Epoch : 4 | Loss: 0.056 | Acc: 1.000
+| Global Round : 6 | User: 1 | Local Epoch : 0 | Loss: 0.129 | Acc: 1.000
+| Global Round : 6 | User: 1 | Local Epoch : 1 | Loss: 0.044 | Acc: 1.000
+| Global Round : 6 | User: 1 | Local Epoch : 2 | Loss: 0.117 | Acc: 1.000
+| Global Round : 6 | User: 1 | Local Epoch : 3 | Loss: 0.059 | Acc: 1.000
+| Global Round : 6 | User: 1 | Local Epoch : 4 | Loss: 0.056 | Acc: 1.000
+| Global Round : 6 | User: 2 | Local Epoch : 0 | Loss: 0.146 | Acc: 1.000
+| Global Round : 6 | User: 2 | Local Epoch : 1 | Loss: 0.347 | Acc: 0.875
+| Global Round : 6 | User: 2 | Local Epoch : 2 | Loss: 0.267 | Acc: 0.875
+| Global Round : 6 | User: 2 | Local Epoch : 3 | Loss: 0.194 | Acc: 1.000
+| Global Round : 6 | User: 2 | Local Epoch : 4 | Loss: 0.109 | Acc: 1.000
+| Global Round : 6 | User: 3 | Local Epoch : 0 | Loss: 0.075 | Acc: 1.000
+| Global Round : 6 | User: 3 | Local Epoch : 1 | Loss: 0.159 | Acc: 1.000
+| Global Round : 6 | User: 3 | Local Epoch : 2 | Loss: 0.138 | Acc: 1.000
+| Global Round : 6 | User: 3 | Local Epoch : 3 | Loss: 0.254 | Acc: 1.000
+| Global Round : 6 | User: 3 | Local Epoch : 4 | Loss: 0.209 | Acc: 1.000
+| Global Round : 6 | User: 4 | Local Epoch : 0 | Loss: 0.128 | Acc: 1.000
+| Global Round : 6 | User: 4 | Local Epoch : 1 | Loss: 0.159 | Acc: 1.000
+| Global Round : 6 | User: 4 | Local Epoch : 2 | Loss: 0.458 | Acc: 0.875
+| Global Round : 6 | User: 4 | Local Epoch : 3 | Loss: 0.240 | Acc: 1.000
+| Global Round : 6 | User: 4 | Local Epoch : 4 | Loss: 0.149 | Acc: 1.000
+| Global Round : 6 | User: 5 | Local Epoch : 0 | Loss: 0.230 | Acc: 1.000
+| Global Round : 6 | User: 5 | Local Epoch : 1 | Loss: 0.350 | Acc: 0.875
+| Global Round : 6 | User: 5 | Local Epoch : 2 | Loss: 0.358 | Acc: 0.875
+| Global Round : 6 | User: 5 | Local Epoch : 3 | Loss: 0.220 | Acc: 0.875
+| Global Round : 6 | User: 5 | Local Epoch : 4 | Loss: 0.279 | Acc: 0.875
+| Global Round : 6 | User: 6 | Local Epoch : 0 | Loss: 0.710 | Acc: 0.875
+| Global Round : 6 | User: 6 | Local Epoch : 1 | Loss: 1.571 | Acc: 0.625
+| Global Round : 6 | User: 6 | Local Epoch : 2 | Loss: 0.158 | Acc: 1.000
+| Global Round : 6 | User: 6 | Local Epoch : 3 | Loss: 0.558 | Acc: 0.750
+| Global Round : 6 | User: 6 | Local Epoch : 4 | Loss: 0.234 | Acc: 1.000
+| Global Round : 6 | User: 7 | Local Epoch : 0 | Loss: 0.242 | Acc: 1.000
+| Global Round : 6 | User: 7 | Local Epoch : 1 | Loss: 0.366 | Acc: 0.875
+| Global Round : 6 | User: 7 | Local Epoch : 2 | Loss: 0.054 | Acc: 1.000
+| Global Round : 6 | User: 7 | Local Epoch : 3 | Loss: 0.671 | Acc: 0.750
+| Global Round : 6 | User: 7 | Local Epoch : 4 | Loss: 0.447 | Acc: 0.875
+| Global Round : 6 | User: 8 | Local Epoch : 0 | Loss: 0.295 | Acc: 1.000
+| Global Round : 6 | User: 8 | Local Epoch : 1 | Loss: 0.414 | Acc: 0.875
+| Global Round : 6 | User: 8 | Local Epoch : 2 | Loss: 0.110 | Acc: 1.000
+| Global Round : 6 | User: 8 | Local Epoch : 3 | Loss: 0.824 | Acc: 0.500
+| Global Round : 6 | User: 8 | Local Epoch : 4 | Loss: 0.126 | Acc: 1.000
+| Global Round : 6 | User: 9 | Local Epoch : 0 | Loss: 0.207 | Acc: 1.000
+| Global Round : 6 | User: 9 | Local Epoch : 1 | Loss: 0.779 | Acc: 0.750
+| Global Round : 6 | User: 9 | Local Epoch : 2 | Loss: 0.442 | Acc: 1.000
+| Global Round : 6 | User: 9 | Local Epoch : 3 | Loss: 0.398 | Acc: 0.875
+| Global Round : 6 | User: 9 | Local Epoch : 4 | Loss: 0.241 | Acc: 0.875
+
+ | Global Training Round : 8 |
+
+| Global Round : 7 | User: 0 | Local Epoch : 0 | Loss: 0.018 | Acc: 1.000
+| Global Round : 7 | User: 0 | Local Epoch : 1 | Loss: 0.077 | Acc: 1.000
+| Global Round : 7 | User: 0 | Local Epoch : 2 | Loss: 0.126 | Acc: 1.000
+| Global Round : 7 | User: 0 | Local Epoch : 3 | Loss: 0.063 | Acc: 1.000
+| Global Round : 7 | User: 0 | Local Epoch : 4 | Loss: 0.333 | Acc: 0.875
+| Global Round : 7 | User: 1 | Local Epoch : 0 | Loss: 0.277 | Acc: 0.750
+| Global Round : 7 | User: 1 | Local Epoch : 1 | Loss: 0.085 | Acc: 1.000
+| Global Round : 7 | User: 1 | Local Epoch : 2 | Loss: 0.162 | Acc: 1.000
+| Global Round : 7 | User: 1 | Local Epoch : 3 | Loss: 0.108 | Acc: 1.000
+| Global Round : 7 | User: 1 | Local Epoch : 4 | Loss: 0.280 | Acc: 1.000
+| Global Round : 7 | User: 2 | Local Epoch : 0 | Loss: 0.193 | Acc: 1.000
+| Global Round : 7 | User: 2 | Local Epoch : 1 | Loss: 0.263 | Acc: 0.875
+| Global Round : 7 | User: 2 | Local Epoch : 2 | Loss: 0.104 | Acc: 1.000
+| Global Round : 7 | User: 2 | Local Epoch : 3 | Loss: 0.068 | Acc: 1.000
+| Global Round : 7 | User: 2 | Local Epoch : 4 | Loss: 0.049 | Acc: 1.000
+| Global Round : 7 | User: 3 | Local Epoch : 0 | Loss: 0.081 | Acc: 1.000
+| Global Round : 7 | User: 3 | Local Epoch : 1 | Loss: 0.215 | Acc: 1.000
+| Global Round : 7 | User: 3 | Local Epoch : 2 | Loss: 0.027 | Acc: 1.000
+| Global Round : 7 | User: 3 | Local Epoch : 3 | Loss: 0.419 | Acc: 0.875
+| Global Round : 7 | User: 3 | Local Epoch : 4 | Loss: 0.175 | Acc: 0.875
+| Global Round : 7 | User: 4 | Local Epoch : 0 | Loss: 0.057 | Acc: 1.000
+| Global Round : 7 | User: 4 | Local Epoch : 1 | Loss: 0.047 | Acc: 1.000
+| Global Round : 7 | User: 4 | Local Epoch : 2 | Loss: 0.111 | Acc: 1.000
+| Global Round : 7 | User: 4 | Local Epoch : 3 | Loss: 0.020 | Acc: 1.000
+| Global Round : 7 | User: 4 | Local Epoch : 4 | Loss: 0.033 | Acc: 1.000
+| Global Round : 7 | User: 5 | Local Epoch : 0 | Loss: 0.184 | Acc: 1.000
+| Global Round : 7 | User: 5 | Local Epoch : 1 | Loss: 0.312 | Acc: 0.875
+| Global Round : 7 | User: 5 | Local Epoch : 2 | Loss: 0.102 | Acc: 1.000
+| Global Round : 7 | User: 5 | Local Epoch : 3 | Loss: 0.640 | Acc: 0.625
+| Global Round : 7 | User: 5 | Local Epoch : 4 | Loss: 0.182 | Acc: 0.875
+| Global Round : 7 | User: 6 | Local Epoch : 0 | Loss: 0.106 | Acc: 1.000
+| Global Round : 7 | User: 6 | Local Epoch : 1 | Loss: 0.513 | Acc: 0.875
+| Global Round : 7 | User: 6 | Local Epoch : 2 | Loss: 0.290 | Acc: 1.000
+| Global Round : 7 | User: 6 | Local Epoch : 3 | Loss: 0.214 | Acc: 1.000
+| Global Round : 7 | User: 6 | Local Epoch : 4 | Loss: 0.531 | Acc: 0.875
+| Global Round : 7 | User: 7 | Local Epoch : 0 | Loss: 0.510 | Acc: 0.875
+| Global Round : 7 | User: 7 | Local Epoch : 1 | Loss: 0.286 | Acc: 0.875
+| Global Round : 7 | User: 7 | Local Epoch : 2 | Loss: 0.938 | Acc: 0.750
+| Global Round : 7 | User: 7 | Local Epoch : 3 | Loss: 0.680 | Acc: 0.750
+| Global Round : 7 | User: 7 | Local Epoch : 4 | Loss: 0.254 | Acc: 1.000
+| Global Round : 7 | User: 8 | Local Epoch : 0 | Loss: 0.577 | Acc: 0.875
+| Global Round : 7 | User: 8 | Local Epoch : 1 | Loss: 0.218 | Acc: 0.875
+| Global Round : 7 | User: 8 | Local Epoch : 2 | Loss: 0.209 | Acc: 0.875
+| Global Round : 7 | User: 8 | Local Epoch : 3 | Loss: 0.494 | Acc: 0.875
+| Global Round : 7 | User: 8 | Local Epoch : 4 | Loss: 0.393 | Acc: 0.875
+| Global Round : 7 | User: 9 | Local Epoch : 0 | Loss: 0.289 | Acc: 0.875
+| Global Round : 7 | User: 9 | Local Epoch : 1 | Loss: 0.151 | Acc: 0.875
+| Global Round : 7 | User: 9 | Local Epoch : 2 | Loss: 0.146 | Acc: 1.000
+| Global Round : 7 | User: 9 | Local Epoch : 3 | Loss: 0.863 | Acc: 0.875
+| Global Round : 7 | User: 9 | Local Epoch : 4 | Loss: 0.651 | Acc: 0.750
+
+ | Global Training Round : 9 |
+
+| Global Round : 8 | User: 0 | Local Epoch : 0 | Loss: 0.077 | Acc: 1.000
+| Global Round : 8 | User: 0 | Local Epoch : 1 | Loss: 0.253 | Acc: 0.875
+| Global Round : 8 | User: 0 | Local Epoch : 2 | Loss: 0.302 | Acc: 0.875
+| Global Round : 8 | User: 0 | Local Epoch : 3 | Loss: 0.075 | Acc: 1.000
+| Global Round : 8 | User: 0 | Local Epoch : 4 | Loss: 0.023 | Acc: 1.000
+| Global Round : 8 | User: 1 | Local Epoch : 0 | Loss: 0.055 | Acc: 1.000
+| Global Round : 8 | User: 1 | Local Epoch : 1 | Loss: 0.081 | Acc: 1.000
+| Global Round : 8 | User: 1 | Local Epoch : 2 | Loss: 0.047 | Acc: 1.000
+| Global Round : 8 | User: 1 | Local Epoch : 3 | Loss: 0.015 | Acc: 1.000
+| Global Round : 8 | User: 1 | Local Epoch : 4 | Loss: 0.103 | Acc: 1.000
+| Global Round : 8 | User: 2 | Local Epoch : 0 | Loss: 0.221 | Acc: 1.000
+| Global Round : 8 | User: 2 | Local Epoch : 1 | Loss: 0.103 | Acc: 1.000
+| Global Round : 8 | User: 2 | Local Epoch : 2 | Loss: 0.079 | Acc: 1.000
+| Global Round : 8 | User: 2 | Local Epoch : 3 | Loss: 0.433 | Acc: 0.875
+| Global Round : 8 | User: 2 | Local Epoch : 4 | Loss: 0.064 | Acc: 1.000
+| Global Round : 8 | User: 3 | Local Epoch : 0 | Loss: 0.052 | Acc: 1.000
+| Global Round : 8 | User: 3 | Local Epoch : 1 | Loss: 0.177 | Acc: 1.000
+| Global Round : 8 | User: 3 | Local Epoch : 2 | Loss: 0.217 | Acc: 0.875
+| Global Round : 8 | User: 3 | Local Epoch : 3 | Loss: 0.899 | Acc: 0.625
+| Global Round : 8 | User: 3 | Local Epoch : 4 | Loss: 0.167 | Acc: 1.000
+| Global Round : 8 | User: 4 | Local Epoch : 0 | Loss: 0.151 | Acc: 0.875
+| Global Round : 8 | User: 4 | Local Epoch : 1 | Loss: 0.057 | Acc: 1.000
+| Global Round : 8 | User: 4 | Local Epoch : 2 | Loss: 0.041 | Acc: 1.000
+| Global Round : 8 | User: 4 | Local Epoch : 3 | Loss: 0.052 | Acc: 1.000
+| Global Round : 8 | User: 4 | Local Epoch : 4 | Loss: 0.673 | Acc: 0.625
+| Global Round : 8 | User: 5 | Local Epoch : 0 | Loss: 0.097 | Acc: 1.000
+| Global Round : 8 | User: 5 | Local Epoch : 1 | Loss: 0.472 | Acc: 0.750
+| Global Round : 8 | User: 5 | Local Epoch : 2 | Loss: 0.191 | Acc: 0.875
+| Global Round : 8 | User: 5 | Local Epoch : 3 | Loss: 0.053 | Acc: 1.000
+| Global Round : 8 | User: 5 | Local Epoch : 4 | Loss: 1.252 | Acc: 0.750
+| Global Round : 8 | User: 6 | Local Epoch : 0 | Loss: 0.404 | Acc: 0.875
+| Global Round : 8 | User: 6 | Local Epoch : 1 | Loss: 1.125 | Acc: 0.625
+| Global Round : 8 | User: 6 | Local Epoch : 2 | Loss: 0.308 | Acc: 0.875
+| Global Round : 8 | User: 6 | Local Epoch : 3 | Loss: 0.320 | Acc: 0.875
+| Global Round : 8 | User: 6 | Local Epoch : 4 | Loss: 0.195 | Acc: 1.000
+| Global Round : 8 | User: 7 | Local Epoch : 0 | Loss: 0.106 | Acc: 1.000
+| Global Round : 8 | User: 7 | Local Epoch : 1 | Loss: 0.469 | Acc: 0.750
+| Global Round : 8 | User: 7 | Local Epoch : 2 | Loss: 0.563 | Acc: 0.875
+| Global Round : 8 | User: 7 | Local Epoch : 3 | Loss: 0.126 | Acc: 1.000
+| Global Round : 8 | User: 7 | Local Epoch : 4 | Loss: 0.177 | Acc: 1.000
+| Global Round : 8 | User: 8 | Local Epoch : 0 | Loss: 0.463 | Acc: 0.750
+| Global Round : 8 | User: 8 | Local Epoch : 1 | Loss: 0.338 | Acc: 0.875
+| Global Round : 8 | User: 8 | Local Epoch : 2 | Loss: 1.215 | Acc: 0.750
+| Global Round : 8 | User: 8 | Local Epoch : 3 | Loss: 0.312 | Acc: 1.000
+| Global Round : 8 | User: 8 | Local Epoch : 4 | Loss: 0.243 | Acc: 0.875
+| Global Round : 8 | User: 9 | Local Epoch : 0 | Loss: 0.417 | Acc: 0.875
+| Global Round : 8 | User: 9 | Local Epoch : 1 | Loss: 0.099 | Acc: 1.000
+| Global Round : 8 | User: 9 | Local Epoch : 2 | Loss: 0.139 | Acc: 1.000
+| Global Round : 8 | User: 9 | Local Epoch : 3 | Loss: 0.231 | Acc: 1.000
+| Global Round : 8 | User: 9 | Local Epoch : 4 | Loss: 0.551 | Acc: 0.750
+
+ | Global Training Round : 10 |
+
+| Global Round : 9 | User: 0 | Local Epoch : 0 | Loss: 0.034 | Acc: 1.000
+| Global Round : 9 | User: 0 | Local Epoch : 1 | Loss: 0.024 | Acc: 1.000
+| Global Round : 9 | User: 0 | Local Epoch : 2 | Loss: 0.022 | Acc: 1.000
+| Global Round : 9 | User: 0 | Local Epoch : 3 | Loss: 0.047 | Acc: 1.000
+| Global Round : 9 | User: 0 | Local Epoch : 4 | Loss: 0.021 | Acc: 1.000
+| Global Round : 9 | User: 1 | Local Epoch : 0 | Loss: 0.187 | Acc: 1.000
+| Global Round : 9 | User: 1 | Local Epoch : 1 | Loss: 0.154 | Acc: 1.000
+| Global Round : 9 | User: 1 | Local Epoch : 2 | Loss: 0.144 | Acc: 1.000
+| Global Round : 9 | User: 1 | Local Epoch : 3 | Loss: 0.136 | Acc: 1.000
+| Global Round : 9 | User: 1 | Local Epoch : 4 | Loss: 0.358 | Acc: 0.875
+| Global Round : 9 | User: 2 | Local Epoch : 0 | Loss: 0.069 | Acc: 1.000
+| Global Round : 9 | User: 2 | Local Epoch : 1 | Loss: 0.071 | Acc: 1.000
+| Global Round : 9 | User: 2 | Local Epoch : 2 | Loss: 0.097 | Acc: 1.000
+| Global Round : 9 | User: 2 | Local Epoch : 3 | Loss: 0.114 | Acc: 1.000
+| Global Round : 9 | User: 2 | Local Epoch : 4 | Loss: 0.070 | Acc: 1.000
+| Global Round : 9 | User: 3 | Local Epoch : 0 | Loss: 0.087 | Acc: 1.000
+| Global Round : 9 | User: 3 | Local Epoch : 1 | Loss: 0.126 | Acc: 1.000
+| Global Round : 9 | User: 3 | Local Epoch : 2 | Loss: 0.105 | Acc: 1.000
+| Global Round : 9 | User: 3 | Local Epoch : 3 | Loss: 0.122 | Acc: 1.000
+| Global Round : 9 | User: 3 | Local Epoch : 4 | Loss: 0.079 | Acc: 1.000
+| Global Round : 9 | User: 4 | Local Epoch : 0 | Loss: 0.104 | Acc: 1.000
+| Global Round : 9 | User: 4 | Local Epoch : 1 | Loss: 0.042 | Acc: 1.000
+| Global Round : 9 | User: 4 | Local Epoch : 2 | Loss: 0.015 | Acc: 1.000
+| Global Round : 9 | User: 4 | Local Epoch : 3 | Loss: 0.024 | Acc: 1.000
+| Global Round : 9 | User: 4 | Local Epoch : 4 | Loss: 0.113 | Acc: 1.000
+| Global Round : 9 | User: 5 | Local Epoch : 0 | Loss: 0.174 | Acc: 1.000
+| Global Round : 9 | User: 5 | Local Epoch : 1 | Loss: 0.102 | Acc: 1.000
+| Global Round : 9 | User: 5 | Local Epoch : 2 | Loss: 0.125 | Acc: 1.000
+| Global Round : 9 | User: 5 | Local Epoch : 3 | Loss: 0.137 | Acc: 1.000
+| Global Round : 9 | User: 5 | Local Epoch : 4 | Loss: 0.111 | Acc: 1.000
+| Global Round : 9 | User: 6 | Local Epoch : 0 | Loss: 0.332 | Acc: 0.875
+| Global Round : 9 | User: 6 | Local Epoch : 1 | Loss: 0.285 | Acc: 0.875
+| Global Round : 9 | User: 6 | Local Epoch : 2 | Loss: 0.522 | Acc: 0.750
+| Global Round : 9 | User: 6 | Local Epoch : 3 | Loss: 0.348 | Acc: 0.875
+| Global Round : 9 | User: 6 | Local Epoch : 4 | Loss: 0.411 | Acc: 0.750
+| Global Round : 9 | User: 7 | Local Epoch : 0 | Loss: 0.322 | Acc: 0.875
+| Global Round : 9 | User: 7 | Local Epoch : 1 | Loss: 0.729 | Acc: 0.750
+| Global Round : 9 | User: 7 | Local Epoch : 2 | Loss: 0.328 | Acc: 1.000
+| Global Round : 9 | User: 7 | Local Epoch : 3 | Loss: 0.280 | Acc: 0.875
+| Global Round : 9 | User: 7 | Local Epoch : 4 | Loss: 0.151 | Acc: 1.000
+| Global Round : 9 | User: 8 | Local Epoch : 0 | Loss: 0.843 | Acc: 0.750
+| Global Round : 9 | User: 8 | Local Epoch : 1 | Loss: 0.854 | Acc: 0.875
+| Global Round : 9 | User: 8 | Local Epoch : 2 | Loss: 0.565 | Acc: 0.750
+| Global Round : 9 | User: 8 | Local Epoch : 3 | Loss: 1.062 | Acc: 0.625
+| Global Round : 9 | User: 8 | Local Epoch : 4 | Loss: 0.734 | Acc: 0.875
+| Global Round : 9 | User: 9 | Local Epoch : 0 | Loss: 0.750 | Acc: 0.875
+| Global Round : 9 | User: 9 | Local Epoch : 1 | Loss: 0.056 | Acc: 1.000
+| Global Round : 9 | User: 9 | Local Epoch : 2 | Loss: 0.955 | Acc: 0.750
+| Global Round : 9 | User: 9 | Local Epoch : 3 | Loss: 0.274 | Acc: 1.000
+| Global Round : 9 | User: 9 | Local Epoch : 4 | Loss: 0.465 | Acc: 0.875
+testing
+Client:0  Test Accuracy: 0.5256
+Client:1  Test Accuracy: 0.5163
+Client:2  Test Accuracy: 0.5395
+Client:3  Test Accuracy: 0.4000
+Client:4  Test Accuracy: 0.4512
+Client:5  Test Accuracy: 0.5721
+Client:6  Test Accuracy: 0.6837
+Client:7  Test Accuracy: 0.5860
+Client:8  Test Accuracy: 0.4651
+Client:9  Test Accuracy: 0.6419
+Pseudo-labeling with modalities
+User 0: Pseudo-labeling accuracy: 0.60
+User 0: Additional training epoch 1, Loss: 0.10716874152421951
+User 0: Additional training epoch 2, Loss: 0.05416575074195862
+User 0: Additional training epoch 3, Loss: 0.025665568187832832
+User 0: Additional training epoch 4, Loss: 0.07109846919775009
+User 0: Additional training epoch 5, Loss: 0.17414769530296326
+User 1: Pseudo-labeling accuracy: 0.82
+User 1: Additional training epoch 1, Loss: 0.15227048099040985
+User 1: Additional training epoch 2, Loss: 0.13224539160728455
+User 1: Additional training epoch 3, Loss: 0.08307255059480667
+User 1: Additional training epoch 4, Loss: 0.3912961483001709
+User 1: Additional training epoch 5, Loss: 1.0026851892471313
+User 2: Pseudo-labeling accuracy: 0.83
+User 2: Additional training epoch 1, Loss: 0.6375374794006348
+User 2: Additional training epoch 2, Loss: 0.1348981112241745
+User 2: Additional training epoch 3, Loss: 0.03301994130015373
+User 2: Additional training epoch 4, Loss: 0.10282827168703079
+User 2: Additional training epoch 5, Loss: 0.19433631002902985
+User 3: Pseudo-labeling accuracy: 0.50
+User 3: Additional training epoch 1, Loss: 0.21698252856731415
+User 3: Additional training epoch 2, Loss: 0.0646543800830841
+User 3: Additional training epoch 3, Loss: 0.17969223856925964
+User 3: Additional training epoch 4, Loss: 0.04889494925737381
+User 3: Additional training epoch 5, Loss: 0.40755537152290344
+User 4: Pseudo-labeling accuracy: 0.79
+User 4: Additional training epoch 1, Loss: 0.6437551975250244
+User 4: Additional training epoch 2, Loss: 0.20024244487285614
+User 4: Additional training epoch 3, Loss: 0.15741898119449615
+User 4: Additional training epoch 4, Loss: 0.2500291168689728
+User 4: Additional training epoch 5, Loss: 0.026653438806533813
+User 5: Pseudo-labeling accuracy: 0.71
+User 5: Additional training epoch 1, Loss: 0.8248926401138306
+User 5: Additional training epoch 2, Loss: 0.3181419372558594
+User 5: Additional training epoch 3, Loss: 0.14160466194152832
+User 5: Additional training epoch 4, Loss: 0.172035351395607
+User 5: Additional training epoch 5, Loss: 0.3098036050796509
+User 6: Pseudo-labeling accuracy: 0.86
+User 6: Additional training epoch 1, Loss: 0.7054786682128906
+User 6: Additional training epoch 2, Loss: 0.10111653804779053
+User 6: Additional training epoch 3, Loss: 0.25503915548324585
+User 6: Additional training epoch 4, Loss: 0.2901380956172943
+User 6: Additional training epoch 5, Loss: 0.33481037616729736
+User 7: Pseudo-labeling accuracy: 0.75
+User 7: Additional training epoch 1, Loss: 0.5079819560050964
+User 7: Additional training epoch 2, Loss: 0.09013508260250092
+User 7: Additional training epoch 3, Loss: 0.522409975528717
+User 7: Additional training epoch 4, Loss: 0.075348861515522
+User 7: Additional training epoch 5, Loss: 0.4679783880710602
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+User 8: Pseudo-labeling accuracy: 1.00
+User 8: Additional training epoch 1, Loss: 0.5744163393974304
+User 8: Additional training epoch 2, Loss: 0.24011635780334473
+User 8: Additional training epoch 3, Loss: 0.5141028761863708
+User 8: Additional training epoch 4, Loss: 0.6639031767845154
+User 8: Additional training epoch 5, Loss: 2.3161823749542236
+User 9: Pseudo-labeling accuracy: 0.94
+User 9: Additional training epoch 1, Loss: 0.2202734649181366
+User 9: Additional training epoch 2, Loss: 0.37332651019096375
+User 9: Additional training epoch 3, Loss: 0.5178714394569397
+User 9: Additional training epoch 4, Loss: 0.12536129355430603
+User 9: Additional training epoch 5, Loss: 0.24855002760887146
+testing
+/home/shayulong/miniconda3/envs/fl/lib/python3.8/site-packages/torch/nn/modules/conv.py:605: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv3d(
+Client:0  Test Accuracy: 0.4744
+Client:1  Test Accuracy: 0.5581
+Client:2  Test Accuracy: 0.4558
+Client:3  Test Accuracy: 0.4558
+Client:4  Test Accuracy: 0.4791
+Client:5  Test Accuracy: 0.5953
+Client:6  Test Accuracy: 0.6791
+Client:7  Test Accuracy: 0.7070
+Client:8  Test Accuracy: 0.5256
+Client:9  Test Accuracy: 0.6512

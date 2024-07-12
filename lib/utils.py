@@ -426,8 +426,10 @@ def get_dataset(args, n_list, k_list):
             # user_dataloaders = utd_iid(args, extracted_train_data, args.num_users, first_modality_users, second_modality_users)
             user_dataloader1 = utd_iid_76(args, train_dataset, first_modality_users, 1)
             user_dataloader2 = utd_iid_76(args, train_dataset, second_modality_users, 2)
+            user_unlabeled1 = utd_iid_76(args, global_dataset, first_modality_users, 1)
+            user_unlabeled2 = utd_iid_76(args, global_dataset, second_modality_users, 2)
             user_dataloaders = {**user_dataloader1, **user_dataloader2}
-
+            user_unlabels = {**user_unlabeled1, **user_unlabeled2}
         else:
             # class CusDataset(Dataset):
             #     def __init__(self, data):
@@ -873,7 +875,7 @@ def get_dataset(args, n_list, k_list):
         empty_dataset = EmptyDataset()
         global_dataloader = DataLoader(empty_dataset, batch_size=1)    
     return train_dataloader_single_modality_1, train_dataloader, test_dataloader_single_modality_1, test_dataloader_single_modality_2, test_dataloader_multi_modality, \
-        test_dataloader_noisy_single_modality_1, test_dataloader_noisy_multi_modality, global_dataloader, user_dataloaders
+        test_dataloader_noisy_single_modality_1, test_dataloader_noisy_multi_modality, global_dataloader, user_dataloaders, user_unlabels #最后这个只加了utd
 
 def average_weights(w):
     """

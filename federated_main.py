@@ -301,7 +301,7 @@ def FedProto_taskheter3(args, train_dataset, test_dataset1, test_dataset2, test_
     #     for i, proto in enumerate(protos, start=1):
     #         print(f"  Modality {i}: {proto}")
         # acc_list_l, acc_list_g, loss_list = test_inference_new_het_lt(flag, args, local_model_list, local_classifier_list, test_dataset1, test_dataset2, test_dataset12, global_protos)
-        local_model_list, local_classifier_list, local_model, local_classifier = aggregate_global_models_c3(local_model_list,   , user_groups, args)
+        # local_model_list, local_classifier_list, local_model, local_classifier = aggregate_global_models_c3(local_model_list,   , user_groups, args)
 
 
         flag = 1
@@ -504,14 +504,8 @@ def adjust_learning_rate(args, optimizer, epoch):
 
 if __name__ == '__main__':
     # TODO
-    '''个人感觉特征和原型这里不要分开搞，有可能圆形拉近了，但特征不近（没试）'''
+    '''个人感觉特征和原型这里不要分开搞，有可能原形拉近了，但特征不近（没试）'''
     '''数据集单模态划分的时候舍弃了一部分数据，这里可以优化'''
-    def set_seed(seed):
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(seed)
-    set_seed(42)
     start_time = time.time()
 
     args = args_parser()
@@ -545,7 +539,7 @@ if __name__ == '__main__':
     elif args.dataset == 'MMAct':
         k_list = np.random.randint(args.shots - args.stdev + 1 , args.shots + args.stdev + 1, args.num_users) #还没用
     train_dataloader_single_modality_1, train_dataset, test_dataset1, test_dataset2, test_dataset12, \
-       test_noisy_1, test_noisy_12, global_dataset, user_groups = get_dataset(args, n_list, k_list) # 其实都是dataloader
+       test_noisy_1, test_noisy_12, global_dataset, user_groups, user_unlabels = get_dataset(args, n_list, k_list) # 其实都是dataloader
     # train_dataloader, test_dataloader, user_groups = get_dataset(args, n_list, k_list)
 
     

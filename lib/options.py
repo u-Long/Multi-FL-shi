@@ -9,11 +9,11 @@ def args_parser():
     parser = argparse.ArgumentParser()
 
     # federated arguments (Notation for the arguments followed from paper)
-    parser.add_argument('--rounds1', type=int, default=5,
+    parser.add_argument('--rounds1', type=int, default=10,
                         help="number of rounds of training")
-    parser.add_argument('--rounds2', type=int, default=5,
+    parser.add_argument('--rounds2', type=int, default=10,
                         help="number of rounds of training")
-    parser.add_argument('--rounds3', type=int, default=5,
+    parser.add_argument('--rounds3', type=int, default=10,
                         help="number of rounds of training")
     parser.add_argument('--num_users', type=int, default=5,
                         help="number of users: K")
